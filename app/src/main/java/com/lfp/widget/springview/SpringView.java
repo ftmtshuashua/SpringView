@@ -1,3 +1,4 @@
+
 package com.lfp.widget.springview;
 
 import android.animation.ValueAnimator;
@@ -16,7 +17,6 @@ import com.lfp.widget.springview.i.ISpringHolders;
 import com.lfp.widget.springview.i.ISpringbackExecutor;
 import com.lfp.widget.springview.imp.ImpSpringChild_Bottom;
 import com.lfp.widget.springview.imp.ImpSpringChild_Top;
-import com.lfp.widget.springview.util.DistanceCorrectionUtil;
 import com.lfp.widget.springview.util.MotionEventUtil;
 
 import java.util.ArrayList;
@@ -142,7 +142,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     public void cleanSpringChild() {
         if (!mSpringChild.isEmpty()) {
             for (ISpringChild child : mSpringChild) {
-                View contentView = child.getContentView(getContext(), this);
+                View contentView = child.getView(getContext(), this);
                 if (contentView != null) removeView(contentView);
             }
             mSpringChild.clear();
@@ -158,7 +158,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         if (childs == null && childs.length == 0) return;
         for (ISpringChild child : childs) {
             child.attachParent(this);
-            child.getContentView(getContext(), this);
+            child.getView(getContext(), this);
             mSpringChild.add(child);
         }
         requestLayout();
@@ -208,34 +208,36 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
                     ev.setAction(action);
                 }
 
-
                 if (mSpringHoldersUtil.isHold()) {
+                    float correction_distance = 0;
                     for (int i = mSpringHoldersUtil.mRegisterHoldersArray.size() - 1; i >= 0; i--) {
                         ISpringHolders hold = mSpringHoldersUtil.mRegisterHoldersArray.get(i);
-                        hold.onSpring(mTrendCheckUtil.getDistanceY(), mTrendCheckUtil.getToucheY());
+                        correction_distance = hold.onSpring(getContentView(), mTrendCheckUtil.getDistanceY(), correction_distance);
                     }
                     return true;
                 }
             }
             break;
-            case MotionEvent.ACTION_UP: {
+            case MotionEvent.ACTION_UP:
                 if (mSpringHoldersUtil.isHold()) {
                     for (int i = mSpringHoldersUtil.mRegisterHoldersArray.size() - 1; i >= 0; i--) {
                         ISpringHolders hold = mSpringHoldersUtil.mRegisterHoldersArray.get(i);
                         hold.onFinish();
                     }
+                    mMotionEventUtil.onCleanTouchEvent(ev);
+                    return true;
                 }
-            }
-            break;
-            case MotionEvent.ACTION_CANCEL: {
+                break;
+            case MotionEvent.ACTION_CANCEL:
                 if (mSpringHoldersUtil.isHold()) {
                     for (int i = mSpringHoldersUtil.mRegisterHoldersArray.size() - 1; i >= 0; i--) {
                         ISpringHolders hold = mSpringHoldersUtil.mRegisterHoldersArray.get(i);
                         hold.onCancel();
                     }
+                    mMotionEventUtil.onCleanTouchEvent(ev);
+                    return true;
                 }
-            }
-            break;
+                break;
         }
 
         boolean is = super.dispatchTouchEvent(ev);
@@ -413,6 +415,10 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         }
     }
 
+    /*启用回弹效果*/
+    public void enableSpringback() {
+        setFlag(FLAG_OPEN_SPRINGBACK);
+    }
 
     /*-------------------------回弹效果--------------------------*/
     ValueAnimator mSpringbackAnimation;
@@ -448,40 +454,36 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
 
     }
 
-    public static final class SimperSpringTop extends ImpSpringChild_Top implements ISpringbackExecutor {
-        float mDistance = 0;
-        DistanceCorrectionUtil mDistanceCorrectionUtil;
+    private static final class SimperSpringTop extends ImpSpringChild_Top implements ISpringbackExecutor {
+        float mDistance;
 
         public SimperSpringTop() {
-            mDistanceCorrectionUtil = new DistanceCorrectionUtil(500);
         }
 
         @Override
-        public void onSpring(float dis_y, float distance_y) {
-            mDistance = distance_y;
-//            mDistance += dis_y;
+        public float onSpring(View springContentView, float dis_y, float correction_distance_y) {
+            mDistance += dis_y;
             if (mDistance <= 0) onCancel();
             else scoll(mDistance);
-
+            return mDistance;
         }
 
         @Override
         public void onCancel() { /*取消*/
+            scoll(0);
             mDistance = 0;
-            getParent().getContentView().setTranslationY(mDistance);
             /*移除持有*/
             clean();
         }
 
+
         private void scoll(float dis) {
-            mDistance = (float) mDistanceCorrectionUtil.correction(mDistance);
-            getParent().getContentView().setTranslationY(mDistance);
+            getParent().getContentView().setTranslationY(dis / 2);
         }
 
         @Override
         public void onFinish() { /*完成*/
-            if (getParent().getContentView().getTranslationY() <= 0) onCancel();
-            else springback(this);
+            springback(this);
         }
 
         @Override
@@ -491,33 +493,42 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
 
         @Override
         public void onSpringback(float rate) {
-            getParent().getContentView().setTranslationY(mDistance * rate);
+            scoll(mDistance * rate);
             if (rate == 0) onCancel();
         }
     }
 
-    public static final class SimperSpringBottom extends ImpSpringChild_Bottom implements ISpringbackExecutor {
-        float mDistance = 0;
+    private static final class SimperSpringBottom extends ImpSpringChild_Bottom implements ISpringbackExecutor {
+
+        float mDistance;
+
+        public SimperSpringBottom() {
+        }
 
         @Override
-        public void onSpring(float dis_y, float distance_y) {
-            mDistance = distance_y;
+        public float onSpring(View springContentView, float dis_y, float correction_distance_y) {
+            mDistance += dis_y;
             if (mDistance >= 0) onCancel();
-            else getParent().getContentView().setTranslationY(mDistance);
+            else scoll(mDistance);
+            return mDistance;
         }
 
         @Override
         public void onCancel() { /*取消*/
+            scoll(0);
             mDistance = 0;
-            getParent().getContentView().setTranslationY(mDistance);
             /*移除持有*/
             clean();
         }
 
+
+        private void scoll(float dis) {
+            getParent().getContentView().setTranslationY(dis / 2);
+        }
+
         @Override
         public void onFinish() { /*完成*/
-            if (getParent().getContentView().getTranslationY() >= 0) onCancel();
-            else springback(this);
+            springback(this);
         }
 
         @Override
@@ -527,7 +538,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
 
         @Override
         public void onSpringback(float rate) {
-            getParent().getContentView().setTranslationY(mDistance * rate);
+            scoll(mDistance * rate);
             if (rate == 0) onCancel();
         }
     }

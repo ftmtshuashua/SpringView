@@ -1,4 +1,4 @@
-package com.lfp.widget.springview.activity.demo1;
+package activity.demo1;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,15 +8,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.lfp.widget.springview.R;
 import com.lfp.widget.springview.SpringView;
-import com.lfp.widget.springview.activity.adapter.RecyclerViewAdapter;
-import com.lfp.widget.springview.activity.util.DelayTask;
+import activity.adapter.RecyclerViewAdapter;
+import activity.util.DelayTask;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -56,11 +52,11 @@ public class ActivityDemo1 extends AppCompatActivity {
 
     }
 
-    SimpleHeaderRefresh mRefresh = new SimpleHeaderRefresh() {
+    SimpleHeader mRefresh = new SimpleHeader() {
 
         @Override
-        public void onRefrsh() {
-            new DelayTask(5000) {
+        public void onRefresh() {
+            new DelayTask(2000) {
                 public void onFinishDelay() {
                     List<String> buildArray = new ArrayList<>();
                     int mCount = (int) (Math.random() * 20 + 1);
@@ -68,10 +64,11 @@ public class ActivityDemo1 extends AppCompatActivity {
                         buildArray.add(MessageFormat.format("刷新数据 - {0,number,0}", i));
                     }
                     mAdapter.setData(buildArray);
-                    finishRefrsh();
+                    finishRefresh();
                 }
             }.execute();
         }
+
     };
 
 

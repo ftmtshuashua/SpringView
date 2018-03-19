@@ -1,4 +1,4 @@
-package com.lfp.widget.springview.activity.demo2;
+package activity.demo2;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import com.lfp.widget.springview.R;
 import com.lfp.widget.springview.SpringView;
-import com.lfp.widget.springview.activity.adapter.RecyclerViewAdapter;
+import activity.adapter.RecyclerViewAdapter;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;

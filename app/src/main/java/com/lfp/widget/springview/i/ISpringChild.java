@@ -13,7 +13,7 @@ import com.lfp.widget.springview.SpringView;
 
 public abstract class ISpringChild implements ISpringHolders {
     //    public static final int FLAG_RUNING = 1; /*标志这个ISpringChild正在被执行*/
-    View mContentView; /*SpringChild的内容*/
+    View mView; /*SpringChild的内容*/
     SpringView mParent;
 
     long mFlag;
@@ -24,26 +24,26 @@ public abstract class ISpringChild implements ISpringHolders {
     }
 
     /*获取SpringChild的View*/
-    public final View getContentView(Context context, SpringView springView) {
-        if (mContentView == null) {
-            mContentView = onCreateView(context, springView);
+    public final View getView(Context context, SpringView springView) {
+        if (mView == null) {
+            mView = onCreateView(context, springView);
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-            onAttachToSpringView(mContentView, springView, params);
-            onViewCreated(mContentView);
+            onAttachToSpringView(mView, springView, params);
+            onViewCreated(mView);
 
         }
-        return mContentView;
+        return mView;
     }
 
     /*子类必须实现的方法，返回SpringChild的View*/
     public abstract View onCreateView(Context context, SpringView springView);
 
-    protected final View getContentView() {
-        return mContentView;
+    protected final View getView() {
+        return mView;
     }
 
     /*当ContentView创建完成之后会回调此方法*/
-    protected void onViewCreated(View contentView) {
+    protected void onViewCreated(View view) {
     }
 
     /*这个方法完成将ContentView添加到SpringView中*/
@@ -85,5 +85,7 @@ public abstract class ISpringChild implements ISpringHolders {
     /*--------------------------检查---------------------------*/
     /*检查是否需要持有这个SpringView，当SpringView被持有的时候，他将接管SpringView的所有操作*/
     public abstract boolean checkHoldSpringView(SpringView.EdgeCheckUtil edgeCheckUtil, SpringView.TrendCheckUtil trendCheckUtil);
+
+
 
 }

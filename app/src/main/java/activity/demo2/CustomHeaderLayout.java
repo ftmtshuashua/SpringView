@@ -1,4 +1,4 @@
-package com.lfp.widget.springview.activity.demo2;
+package activity.demo2;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -20,7 +20,7 @@ public abstract class CustomHeaderLayout extends ImpSpringChild_Top implements V
     int mDistance; /*当前位置*/
 
     @Override
-    public void onSpring(float dis_y, float distance_y) {
+    public float onSpring(View springContentView, float dis_y, float correction_distance_y) {
         mDistance += dis_y;
         if (mDistance > mMaxHeight) mDistance = mMaxHeight;
         if (mDistance <= 0) {
@@ -28,6 +28,7 @@ public abstract class CustomHeaderLayout extends ImpSpringChild_Top implements V
         } else {
             scroll(mDistance);
         }
+        return mDistance;
     }
 
     @Override
@@ -43,7 +44,7 @@ public abstract class CustomHeaderLayout extends ImpSpringChild_Top implements V
 
     void scroll(int dis) {
         mDistance = dis;
-        getContentView().setTranslationY(dis);
+        getView().setTranslationY(dis);
         getParent().getContentView().setTranslationY(dis);
     }
 

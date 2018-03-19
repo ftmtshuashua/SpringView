@@ -1,4 +1,4 @@
-package com.lfp.widget.springview.activity.util;
+package activity.util;
 
 import android.os.Handler;
 import android.os.Message;

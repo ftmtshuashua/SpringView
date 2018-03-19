@@ -7,31 +7,42 @@ package com.lfp.widget.springview.util;
 
 public class DistanceCorrectionUtil {
 
-    double mMaxDistance;
-    double mStartDistance;
+    double mTouchDistance; /*触摸位移*/
+    double mCorrectionDistance;
 
+    double mMaxTouchDistance;
 
-
-    /**
-     * @param max_distance 最大距离
-     */
-    public DistanceCorrectionUtil(double max_distance) {
-        setMaxDistance(max_distance);
+    public DistanceCorrectionUtil() {
     }
 
-    public void setMaxDistance(double max_distance) {
-        mMaxDistance = max_distance;
+    /*设置最大位移值*/
+    public void setMaxTouchDistance(double maxTouchDistance) {
+        mMaxTouchDistance = maxTouchDistance;
     }
 
 
-    /**
-     * @param distance 需要修正的数据
-     * @return 修正之后的数据
-     */
-    public double correction(double distance) {
-        if (distance > mMaxDistance) return mMaxDistance;
-        if (distance <= mStartDistance) return distance;
-        return (1d - distance / (distance + mMaxDistance)) * mMaxDistance;
+    public void setTouchDistance(double dis){
+        mTouchDistance =dis;
     }
+
+    /*接收滑动*/
+    public void move(double distance) {
+        mTouchDistance += distance;
+        if (mMaxTouchDistance > 0 && mTouchDistance > mMaxTouchDistance)
+            mTouchDistance = mMaxTouchDistance;
+
+        mCorrectionDistance = mTouchDistance / 2;
+    }
+
+    /*获得实际的位移值*/
+    public double getTouchDistance() {
+        return mTouchDistance;
+    }
+
+    /*获得修正之后的位移值*/
+    public double getCorrectionDistance() {
+        return mCorrectionDistance;
+    }
+
 
 }

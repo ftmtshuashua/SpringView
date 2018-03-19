@@ -1,4 +1,4 @@
-package com.lfp.widget.springview.activity;
+package activity;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -6,8 +6,8 @@ import android.view.View;
 
 import com.lfp.widget.springview.R;
 import com.lfp.widget.springview.SpringView;
-import com.lfp.widget.springview.activity.demo1.ActivityDemo1;
-import com.lfp.widget.springview.activity.demo2.ActivityDemo2;
+import activity.demo1.ActivityDemo1;
+import activity.demo2.ActivityDemo2;
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -17,7 +17,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_home);
 
         SpringView mSpringView = (SpringView) findViewById(R.id.layout_RootView);
-        mSpringView.setFlag(SpringView.FLAG_OPEN_SPRINGBACK);
+        mSpringView.enableSpringback();
 
         findViewById(R.id.view_Demo1).setOnClickListener(this);
         findViewById(R.id.view_Demo2).setOnClickListener(this);

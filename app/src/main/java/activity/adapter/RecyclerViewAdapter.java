@@ -1,4 +1,4 @@
-package com.lfp.widget.springview.activity.adapter;
+package activity.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
