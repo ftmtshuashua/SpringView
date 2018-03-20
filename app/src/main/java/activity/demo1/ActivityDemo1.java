@@ -12,12 +12,12 @@ import android.support.v7.widget.RecyclerView;
 import com.lfp.widget.springview.R;
 import com.lfp.widget.springview.SpringView;
 
-import activity.adapter.RecyclerViewAdapter;
-import activity.util.DelayTask;
-
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import activity.adapter.RecyclerViewAdapter;
+import activity.util.DelayTask;
 
 /**
  * Created by LiFuPing on 2018/3/17.
@@ -74,7 +74,19 @@ public class ActivityDemo1 extends AppCompatActivity {
 
         @Override
         public void onLoading() {
+            new DelayTask(2000) {
 
+                @Override
+                public void onFinishDelay() {
+                    List<String> buildArray = new ArrayList<>();
+                    int mCount = (int) (Math.random() * 5 + 1);
+                    for (int i = 0; i < mCount; i++) {
+                        buildArray.add(MessageFormat.format("加载数据 - {0,number,0}", i));
+                    }
+                    mAdapter.addData(buildArray);
+                    finishLoading();
+                }
+            }.execute();
         }
     };
 

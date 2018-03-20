@@ -23,7 +23,7 @@ public interface ISpringHolders {
     void onCancel();
 
     /**
-     * 当事件完成 - 在这里执行逻辑
+     * 当用户手指抬起的时候 - 在这里执行逻辑
      */
     void onFinish();
 

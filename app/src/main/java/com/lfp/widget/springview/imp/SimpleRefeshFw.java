@@ -13,6 +13,8 @@ import com.lfp.widget.springview.i.ISpringbackExecutor;
 
 public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpringbackExecutor {
 
+    /*下拉刷新*/
+    public static final int STATE_DOWN_REFESH = 4;
     /*准备刷新*/
     public static final int STATE_PREPARE_REFESH = 1;
     /*开始刷新*/
@@ -52,7 +54,7 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpri
                 scrollTo(mDistance);
             } else {
                 mFlag &= ~FLAG_PREPARE_REFESH;
-                setState(STATE_INIT);
+                setState(STATE_DOWN_REFESH);
                 scrollTo(mDistance);
             }
         }
@@ -76,12 +78,12 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpri
     void setState(int state) {
         if (mCurrentState != state) {
             mCurrentState = state;
-            onRefreshStart(state);
+            onRefreshStateChange(state);
         }
     }
 
     /*回调状态*/
-    protected abstract void onRefreshStart(int state);
+    protected abstract void onRefreshStateChange(int state);
 
     @Override
     public void onCancel() {
@@ -143,18 +145,23 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpri
     @Override
     public void onSpringback(float rate) {
         scrollTo(mDistance * rate);
-        if (rate == 0) onCancel();
+        if (rate == 0) {
+            setState(STATE_INIT);
+            onCancel();
+        }
     }
 
     /*完成刷新*/
     public void finishRefresh() {
-        mFlag &= ~FLAG_START_REFESH;
-        setState(STATE_REFESH_FINISH);
-        if (mDistance <= 0) {
-            onCancel();
-        } else { /*刷新完成*/
-            springback(this);
-        }
+        if (isRefeshing()) {
+            mFlag &= ~FLAG_START_REFESH;
+            setState(STATE_REFESH_FINISH);
+            if (mDistance <= 0) {
+                onCancel();
+            } else { /*刷新完成*/
+                springback(this);
+            }
+        } else springback(this);
     }
 
     /**

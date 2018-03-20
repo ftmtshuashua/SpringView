@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#ff567898">
+    tools:background="#ff567898">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -14,9 +14,9 @@
 
         <ProgressBar
             android:id="@+id/view_ProgressBar"
-            android:visibility="invisible"
             android:layout_width="15dp"
-            android:layout_height="15dp" />
+            android:layout_height="15dp"
+            android:visibility="invisible" />
 
         <TextView
             android:id="@+id/view_Info"
@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:padding="16dp"
-            android:textColor="#ffffffff"
+            android:textColor="#ff666666"
             tools:text="test" />
     </LinearLayout>
 

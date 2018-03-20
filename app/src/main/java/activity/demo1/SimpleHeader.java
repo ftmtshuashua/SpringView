@@ -30,23 +30,21 @@ public abstract class SimpleHeader extends SimpleRefeshFw {
 
 
     @Override
-    protected void onRefreshStart(int state) {
+    protected void onRefreshStateChange(int state) {
+        mProgressBar.setVisibility(state == SimpleRefeshFw.STATE_START_REFESH ? View.VISIBLE : View.GONE);
         switch (state) {
+            case SimpleRefeshFw.STATE_DOWN_REFESH:
             case SimpleRefeshFw.STATE_INIT:
                 mTV_Info.setText("下拉刷新");
-                mProgressBar.setVisibility(View.GONE);
                 break;
             case SimpleRefeshFw.STATE_PREPARE_REFESH:
                 mTV_Info.setText("松开刷新");
-                mProgressBar.setVisibility(View.GONE);
                 break;
             case SimpleRefeshFw.STATE_START_REFESH:
                 mTV_Info.setText("正在刷新...");
-                mProgressBar.setVisibility(View.VISIBLE);
                 break;
             case SimpleRefeshFw.STATE_REFESH_FINISH:
                 mTV_Info.setText("刷新完成");
-                mProgressBar.setVisibility(View.GONE);
                 break;
         }
     }

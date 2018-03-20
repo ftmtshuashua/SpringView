@@ -38,7 +38,7 @@ public abstract class ISpringChild implements ISpringHolders {
     /*子类必须实现的方法，返回SpringChild的View*/
     public abstract View onCreateView(Context context, SpringView springView);
 
-    protected final View getView() {
+    public final View getView() {
         return mView;
     }
 

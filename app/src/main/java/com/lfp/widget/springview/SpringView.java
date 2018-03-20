@@ -136,13 +136,22 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         addSpringChild(childs);
     }
 
+    /*移除SpringChild*/
+    public void removeSpringChild(ISpringChild... childs) {
+        for (ISpringChild child : childs) {
+            View contentView = child.getView();
+            if (contentView != null) removeView(contentView);
+            mSpringChild.remove(child);
+        }
+    }
+
     /**
      * 清理 SpringChild
      */
     public void cleanSpringChild() {
         if (!mSpringChild.isEmpty()) {
             for (ISpringChild child : mSpringChild) {
-                View contentView = child.getView(getContext(), this);
+                View contentView = child.getView();
                 if (contentView != null) removeView(contentView);
             }
             mSpringChild.clear();
