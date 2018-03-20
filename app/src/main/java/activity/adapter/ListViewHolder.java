@@ -7,7 +7,7 @@ import android.widget.TextView;
 import com.lfp.widget.springview.R;
 
 /**
- * Created by Administrator on 2018/3/17.
+ * Created by LiFuPing on 2018/3/17.
  */
 
 public class ListViewHolder  extends RecyclerView.ViewHolder {

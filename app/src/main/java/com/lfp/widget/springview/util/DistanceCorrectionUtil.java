@@ -2,7 +2,7 @@ package com.lfp.widget.springview.util;
 
 /**
  * 距离修正工具
- * Created by Administrator on 2018/3/17.
+ * Created by LiFuPing on 2018/3/17.
  */
 
 public class DistanceCorrectionUtil {

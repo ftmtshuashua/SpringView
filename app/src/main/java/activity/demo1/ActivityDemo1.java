@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 
 import com.lfp.widget.springview.R;
 import com.lfp.widget.springview.SpringView;
+
 import activity.adapter.RecyclerViewAdapter;
 import activity.util.DelayTask;
 
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Administrator on 2018/3/17.
+ * Created by LiFuPing on 2018/3/17.
  */
 
 public class ActivityDemo1 extends AppCompatActivity {
@@ -41,19 +42,17 @@ public class ActivityDemo1 extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter = new RecyclerViewAdapter());
 
         SpringView mSpringView = (SpringView) findViewById(R.id.view_SpringView);
-        mSpringView.setSpringChild(mRefresh);
+        mSpringView.setSpringChild(mRefresh, mLoading);
+
 
         List<String> buildArray = new ArrayList<>();
         for (int i = 0; i < 15; i++) {
             buildArray.add(MessageFormat.format("原始数据 - {0,number,0}", i));
         }
         mAdapter.setData(buildArray);
-
-
     }
 
     SimpleHeader mRefresh = new SimpleHeader() {
-
         @Override
         public void onRefresh() {
             new DelayTask(2000) {
@@ -69,6 +68,14 @@ public class ActivityDemo1 extends AppCompatActivity {
             }.execute();
         }
 
+    };
+
+    SimpleBottom mLoading = new SimpleBottom() {
+
+        @Override
+        public void onLoading() {
+
+        }
     };
 
 

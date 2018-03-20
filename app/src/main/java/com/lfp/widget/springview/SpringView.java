@@ -183,7 +183,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
                 mTrendCheckUtil.setTouchMove(mMotionEventUtil.getMaxDistanceEvent());
                 for (ISpringChild child : mSpringChild) {
                     if (!mSpringHoldersUtil.isHold() || (!mSpringHoldersUtil.isHold(child) && child.getGroupId() == mSpringHoldersUtil.getGroupId())) {
-                        boolean is = child.checkHoldSpringView(mEdgeCheckUtil, mTrendCheckUtil);
+                        boolean is = child.checkHoldSpringView(mEdgeCheckUtil, mTrendCheckUtil) && (mSpringHoldersUtil.isHold() ? true : mTouchSlop <= mTrendCheckUtil.getToucheDistance());
                         if (is && !mSpringHoldersUtil.isHold()) {
                             mTrendCheckUtil.clean();
                             mTrendCheckUtil.setTouchMove(mMotionEventUtil.getMaxDistanceEvent());
@@ -358,17 +358,21 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
             return dis_Y;
         }
 
-        public float getToucheX() {
+        public float getTouchX() {
             return touch_X;
         }
 
-        public float getToucheY() {
+        public float getTouchY() {
             return touch_Y;
         }
 
 
         public double getDistance() {
             return Math.sqrt(dis_X * dis_X + dis_Y * dis_Y);
+        }
+
+        public double getToucheDistance() {
+            return Math.sqrt(touch_X * touch_X + touch_Y * touch_Y);
         }
     }
 
@@ -450,7 +454,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         if (value == 0) {
             mFlag &= ~FLAG_PAUSE_TOUCHE_EVENT;
         } else mFlag |= FLAG_PAUSE_TOUCHE_EVENT;
-        mISpringbackExecutor.onSpringback(value);
+        if (mISpringbackExecutor != null) mISpringbackExecutor.onSpringback(value);
 
     }
 

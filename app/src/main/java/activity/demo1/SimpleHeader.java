@@ -8,14 +8,13 @@ import android.widget.TextView;
 
 import com.lfp.widget.springview.R;
 import com.lfp.widget.springview.SpringView;
-import com.lfp.widget.springview.imp.SimpleHeaderRefesh;
+import com.lfp.widget.springview.imp.SimpleRefeshFw;
 
 /**
  * 自定义简单头部刷新
- * Created by Administrator on 2018/3/17.
+ * Created by LiFuPing on 2018/3/17.
  */
-
-public abstract class SimpleHeader extends SimpleHeaderRefesh {
+public abstract class SimpleHeader extends SimpleRefeshFw {
 
     TextView mTV_Info;
     ProgressBar mProgressBar;
@@ -33,17 +32,21 @@ public abstract class SimpleHeader extends SimpleHeaderRefesh {
     @Override
     protected void onRefreshStart(int state) {
         switch (state) {
-            case SimpleHeaderRefesh.STATE_INIT:
+            case SimpleRefeshFw.STATE_INIT:
                 mTV_Info.setText("下拉刷新");
                 mProgressBar.setVisibility(View.GONE);
                 break;
-            case SimpleHeaderRefesh.STATE_PREPARE_REFESH:
+            case SimpleRefeshFw.STATE_PREPARE_REFESH:
                 mTV_Info.setText("松开刷新");
                 mProgressBar.setVisibility(View.GONE);
                 break;
-            case SimpleHeaderRefesh.STATE_START_REFESH:
-                mTV_Info.setText("正在刷新");
+            case SimpleRefeshFw.STATE_START_REFESH:
+                mTV_Info.setText("正在刷新...");
                 mProgressBar.setVisibility(View.VISIBLE);
+                break;
+            case SimpleRefeshFw.STATE_REFESH_FINISH:
+                mTV_Info.setText("刷新完成");
+                mProgressBar.setVisibility(View.GONE);
                 break;
         }
     }

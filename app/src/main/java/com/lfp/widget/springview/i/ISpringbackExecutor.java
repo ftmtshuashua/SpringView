@@ -2,7 +2,7 @@ package com.lfp.widget.springview.i;
 
 /**
  * 回弹执行者
- * Created by Administrator on 2018/3/15.
+ * Created by LiFuPing on 2018/3/15.
  */
 
 public interface ISpringbackExecutor {

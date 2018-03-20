@@ -13,7 +13,7 @@ import com.lfp.widget.springview.imp.ImpSpringChild_Top;
 
 /**
  * 简单头部布局
- * Created by Administrator on 2018/3/17.
+ * Created by LiFuPing on 2018/3/17.
  */
 
 public abstract class CustomHeaderLayout extends ImpSpringChild_Top implements View.OnClickListener {
