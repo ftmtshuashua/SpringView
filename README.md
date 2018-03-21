@@ -1,7 +1,6 @@
 demo：[点击下载](https://raw.githubusercontent.com/ftmtshuashua/SpringView/master/app-debug.apk)
 
 # SpringView
-=====
 
 SpringView是一个继承于FrameLayout的轻量级弹性布局,主要负责弹动事件分发,能轻易的实现下拉\上拉动画效果。充分发挥你的想象它能为你做很多事情。
 
@@ -39,14 +38,14 @@ dependencies {
 SpringView mSpringView = (SpringView) findViewById(R.id.layout_SpringView);
 ```
 
--回弹效果
+ - 回弹效果
 
 ```
 SpringView mSpringView = (SpringView) findViewById(R.id.layout_SpringView);
 mSpringView.enableSpringback();
 ```
 
--刷新与加载请参考Demo
+ - 刷新与加载请参考Demo
 
 ```
 Acitivity(){
