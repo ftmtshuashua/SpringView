@@ -45,22 +45,26 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
      * 开始刷新
      */
     public void start() {
-        if (isRefeshing() || mSimpleLoadingFw.isStartLoading()) return;
+        if (isRefeshing() || isStartLoading()) return;
         getView().post(new Runnable() {
             @Override
             public void run() {
-                if (isRefeshing() || mSimpleLoadingFw.isStartLoading()) return;
+                if (isRefeshing() || isStartLoading()) return;
                 getParent().registerHolder(SimpleRefeshFw.this);
                 springback(mAutoRefeshSpringback);
             }
         });
     }
 
+    private boolean isStartLoading() {
+        return mSimpleLoadingFw != null && mSimpleLoadingFw.isStartLoading();
+    }
+
     @Override
     public float onSpring(View springContentView, float dis_y, float correction_distance_y) {
         mDistance += dis_y / 2;
         if (mDistance > mMaxHeight) mDistance = mMaxHeight;
-        if (mSimpleLoadingFw != null && mSimpleLoadingFw.isStartLoading()) {
+        if (isStartLoading()) {
             setState(STATE_LOADING_NOT_OVER);
             scrollTo(mDistance);
             if (mDistance <= 0) onCancel();
