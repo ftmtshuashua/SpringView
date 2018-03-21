@@ -1,4 +1,4 @@
-package activity.demo2;
+package com.lfp.widget.demo.activity.demo2;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,7 +7,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.lfp.widget.springview.R;
+import com.lfp.widget.demo.R;
 import com.lfp.widget.springview.SpringView;
 import com.lfp.widget.springview.imp.ImpSpringChild_Top;
 

@@ -65,7 +65,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     /**
      * 获得边缘状态检测器
      *
-     * @return
+     * @return SpringView的边缘检测器
      */
     public EdgeCheckUtil getEdgeCheckUtil() {
         return mEdgeCheckUtil;
@@ -74,7 +74,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     /**
      * 获得触摸检测器
      *
-     * @return
+     * @return SpringView的触摸检测器
      */
     public TrendCheckUtil getTrendCheckUtil() {
         return mTrendCheckUtil;
@@ -119,7 +119,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     /**
      * 添加SpringChild
      *
-     * @param childs
+     * @param childs  SpringChild集合
      */
     public void setSpringChild(List<? extends ISpringChild> childs) {
         if (childs == null && childs.isEmpty()) return;
@@ -129,7 +129,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     /**
      * 添加SpringChild
      *
-     * @param childs
+     * @param childs SpringChild集合
      */
     public void setSpringChild(ISpringChild... childs) {
         cleanSpringChild();
@@ -440,7 +440,8 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     /**
      * 执行回弹操作
      *
-     * @param springbackExecutor
+     * @param springbackExecutor   执行回调，回弹逻辑实现的地方
+     * @param duration  执行时间
      */
     public void starSpringback(final ISpringbackExecutor springbackExecutor, long duration) {
         mFlag |= FLAG_PAUSE_TOUCHE_EVENT;

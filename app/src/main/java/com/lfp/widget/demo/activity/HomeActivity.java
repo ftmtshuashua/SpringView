@@ -1,14 +1,14 @@
-package activity;
+package com.lfp.widget.demo.activity;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.lfp.widget.springview.R;
+import com.lfp.widget.demo.R;
 import com.lfp.widget.springview.SpringView;
 
-import activity.demo1.ActivityDemo1;
-import activity.demo2.ActivityDemo2;
+import com.lfp.widget.demo.activity.demo1.ActivityDemo1;
+import com.lfp.widget.demo.activity.demo2.ActivityDemo2;
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 

@@ -1,4 +1,4 @@
-package activity.util;
+package com.lfp.widget.demo.activity.util;
 
 import android.os.Handler;
 import android.os.Message;

@@ -1,10 +1,11 @@
-package activity.adapter;
+package com.lfp.widget.demo.activity.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
-import com.lfp.widget.springview.R;
+import com.lfp.widget.demo.R;
+
 
 /**
  * Created by LiFuPing on 2018/3/17.

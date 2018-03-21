@@ -1,10 +1,10 @@
-package activity.adapter;
+package com.lfp.widget.demo.activity.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.lfp.widget.springview.R;
+import com.lfp.widget.demo.R;
 
 import java.util.ArrayList;
 import java.util.List;

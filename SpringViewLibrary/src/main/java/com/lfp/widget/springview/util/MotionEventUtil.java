@@ -26,6 +26,8 @@ public class MotionEventUtil {
     /**
      * 设置是否开启轨迹
      * 请调用{@link #drawTrajectory(Canvas, Paint)} 绘制轨迹
+     *
+     * @param is 是否开启轨迹检查
      */
     public void setTrajectory(boolean is) {
         mIsOpenTrajectory = is;
@@ -131,7 +133,12 @@ public class MotionEventUtil {
         return maxEvent;
     }
 
-    /**绘制轨迹*/
+    /**
+     * 绘制轨迹
+     *
+     * @param canvas 画布
+     * @param paint  画笔
+     */
     public void drawTrajectory(Canvas canvas, Paint paint) {
         if (!mIsOpenTrajectory) return;
         Map<Integer, SingleMotionEvent> mdata = mMotionEventArray;

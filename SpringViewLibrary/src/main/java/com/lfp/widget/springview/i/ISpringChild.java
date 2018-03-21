@@ -70,6 +70,7 @@ public abstract class ISpringChild implements ISpringHolders {
 
     /**
      * 回弹(调用SpringView已经定义好单一种回弹方式,这个方式也可以自己实现)
+     * @param ise  执行回调，回弹逻辑实现的地方
      */
     public void springback(ISpringbackExecutor ise) {
         getParent().starSpringback(ise, 250);

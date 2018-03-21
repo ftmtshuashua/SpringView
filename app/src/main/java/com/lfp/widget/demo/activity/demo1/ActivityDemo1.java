@@ -1,4 +1,4 @@
-package activity.demo1;
+package com.lfp.widget.demo.activity.demo1;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,15 +9,15 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.lfp.widget.springview.R;
+import com.lfp.widget.demo.R;
 import com.lfp.widget.springview.SpringView;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import activity.adapter.RecyclerViewAdapter;
-import activity.util.DelayTask;
+import com.lfp.widget.demo.activity.adapter.RecyclerViewAdapter;
+import com.lfp.widget.demo.activity.util.DelayTask;
 
 /**
  * Created by LiFuPing on 2018/3/17.

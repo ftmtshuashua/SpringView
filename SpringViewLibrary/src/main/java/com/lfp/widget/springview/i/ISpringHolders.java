@@ -29,6 +29,8 @@ public interface ISpringHolders {
 
     /**
      * 组ID,SpringView同一时间只会执行同一组的SpringChild
+     *
+     * @return 获得分组ID
      */
     int getGroupId();
 }

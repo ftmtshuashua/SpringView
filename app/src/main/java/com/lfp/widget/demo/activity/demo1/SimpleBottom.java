@@ -1,11 +1,11 @@
-package activity.demo1;
+package com.lfp.widget.demo.activity.demo1;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import com.lfp.widget.springview.R;
+import com.lfp.widget.demo.R;
 import com.lfp.widget.springview.SpringView;
 import com.lfp.widget.springview.imp.SimpleLoadingFw;
 
