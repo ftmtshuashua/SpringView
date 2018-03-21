@@ -6,6 +6,7 @@ import android.content.Context;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewConfigurationCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -464,6 +465,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     @Override
     public void onAnimationUpdate(ValueAnimator animation) {
         float value = (float) animation.getAnimatedValue();
+        Log.e("--onAnimationUpdate",""+value);
         if (value == 0) {
             mFlag &= ~FLAG_PAUSE_TOUCHE_EVENT;
         } else mFlag |= FLAG_PAUSE_TOUCHE_EVENT;

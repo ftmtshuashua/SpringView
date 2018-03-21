@@ -51,6 +51,8 @@ public class ActivityDemo1 extends AppCompatActivity {
             buildArray.add(MessageFormat.format("原始数据 - {0,number,0}", i));
         }
         mAdapter.setData(buildArray);
+
+        mRefresh.start(); /*自动刷新*/
     }
 
     SimpleHeader mRefresh = new SimpleHeader() {

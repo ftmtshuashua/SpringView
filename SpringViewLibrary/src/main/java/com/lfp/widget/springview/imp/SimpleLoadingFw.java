@@ -65,7 +65,6 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
         return mDistance;
     }
 
-
     void scrollTo(float dis) {
         getView().setTranslationY((int) dis);
         getParent().getContentView().setTranslationY(dis);

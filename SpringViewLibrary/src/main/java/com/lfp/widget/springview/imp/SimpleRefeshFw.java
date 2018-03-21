@@ -40,6 +40,22 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
 
     SimpleLoadingFw mSimpleLoadingFw;
 
+
+    /**
+     * 开始刷新
+     */
+    public void start() {
+        if (isRefeshing() || mSimpleLoadingFw.isStartLoading()) return;
+        getView().post(new Runnable() {
+            @Override
+            public void run() {
+                if (isRefeshing() || mSimpleLoadingFw.isStartLoading()) return;
+                getParent().registerHolder(SimpleRefeshFw.this);
+                springback(mAutoRefeshSpringback);
+            }
+        });
+    }
+
     @Override
     public float onSpring(View springContentView, float dis_y, float correction_distance_y) {
         mDistance += dis_y / 2;
@@ -206,5 +222,20 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
         }
     };
 
+    /*自动刷新事件事件*/
+    ISpringbackExecutor mAutoRefeshSpringback = new ISpringbackExecutor() {
+        @Override
+        public void onSpringback(float rate) {
+            if (rate == 1) {
+                mFlag |= FLAG_START_REFESH;
+                setState(STATE_START_REFESH);
+            }
+            float dis = mStartRefreshHeight * (1 - rate);
+            mDistance = dis;
+            scrollTo(dis);
+
+            if (rate == 0) onRefresh();
+        }
+    };
 
 }
