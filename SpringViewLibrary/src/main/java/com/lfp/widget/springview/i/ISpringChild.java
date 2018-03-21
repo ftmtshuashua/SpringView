@@ -70,23 +70,34 @@ public abstract class ISpringChild implements ISpringHolders {
 
     /**
      * 回弹(调用SpringView已经定义好单一种回弹方式,这个方式也可以自己实现)
-     * @param ise  执行回调，回弹逻辑实现的地方
+     *
+     * @param ise 执行回调，回弹逻辑实现的地方
      */
     public void springback(ISpringbackExecutor ise) {
-        getParent().starSpringback(ise, 250);
+        springback(ise, 250);
+    }
+
+    /**
+     * 回弹(调用SpringView已经定义好单一种回弹方式,这个方式也可以自己实现)
+     *
+     * @param ise      执行回调，回弹逻辑实现的地方
+     * @param duration 执行时间
+     */
+    public void springback(ISpringbackExecutor ise, long duration) {
+        getParent().starSpringback(this, ise, duration);
     }
 
     /**
      * 清理 - 当SpringChild执行完成之后应该在适当的时候调用此方法来清理一些必要的状态，以确保SpringView能正常执行后续动作
      */
-    public void clean() {
+    public void release() {
         getParent().unregisterHolder(this);
     }
 
-    /*--------------------------检查---------------------------*/
-    /*检查是否需要持有这个SpringView，当SpringView被持有的时候，他将接管SpringView的所有操作*/
-    public abstract boolean checkHoldSpringView(SpringView.EdgeCheckUtil edgeCheckUtil, SpringView.TrendCheckUtil trendCheckUtil);
-
+    /**
+     * 检查是否需要持有这个SpringView，当SpringView被持有的时候，他将接管SpringView的所有操作
+     */
+    public abstract boolean onCheckHoldSpringView(SpringView.EdgeCheckUtil edgeCheckUtil, SpringView.TrendCheckUtil trendCheckUtil);
 
 
 }

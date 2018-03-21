@@ -119,7 +119,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     /**
      * 添加SpringChild
      *
-     * @param childs  SpringChild集合
+     * @param childs SpringChild集合
      */
     public void setSpringChild(List<? extends ISpringChild> childs) {
         if (childs == null && childs.isEmpty()) return;
@@ -192,7 +192,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
                 mTrendCheckUtil.setTouchMove(mMotionEventUtil.getMaxDistanceEvent());
                 for (ISpringChild child : mSpringChild) {
                     if (!mSpringHoldersUtil.isHold() || (!mSpringHoldersUtil.isHold(child) && child.getGroupId() == mSpringHoldersUtil.getGroupId())) {
-                        boolean is = child.checkHoldSpringView(mEdgeCheckUtil, mTrendCheckUtil) && (mSpringHoldersUtil.isHold() ? true : mTouchSlop <= mTrendCheckUtil.getToucheDistance());
+                        boolean is = child.onCheckHoldSpringView(mEdgeCheckUtil, mTrendCheckUtil) && (mSpringHoldersUtil.isHold() ? true : mTouchSlop <= mTrendCheckUtil.getToucheDistance());
                         if (is && !mSpringHoldersUtil.isHold()) {
                             mTrendCheckUtil.clean();
                             mTrendCheckUtil.setTouchMove(mMotionEventUtil.getMaxDistanceEvent());
@@ -440,22 +440,25 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     /**
      * 执行回弹操作
      *
-     * @param springbackExecutor   执行回调，回弹逻辑实现的地方
-     * @param duration  执行时间
+     * @param child              执行者的ISpringChild
+     * @param springbackExecutor 执行回调，回弹逻辑实现的地方
+     * @param duration           执行时间
      */
-    public void starSpringback(final ISpringbackExecutor springbackExecutor, long duration) {
-        mFlag |= FLAG_PAUSE_TOUCHE_EVENT;
-        if (mSpringbackAnimation == null) {
-            mSpringbackAnimation = ValueAnimator.ofFloat(1f, 0f);
-            mSpringbackAnimation.setInterpolator(new DecelerateInterpolator());
-            mSpringbackAnimation.addUpdateListener(this);
-        } else if (mSpringbackAnimation.isRunning()) {
-            mSpringbackAnimation.end();
+    public void starSpringback(ISpringChild child, final ISpringbackExecutor springbackExecutor, long duration) {
+        if (mSpringHoldersUtil.isHold(child)) {
+            mFlag |= FLAG_PAUSE_TOUCHE_EVENT;
+            if (mSpringbackAnimation == null) {
+                mSpringbackAnimation = ValueAnimator.ofFloat(1f, 0f);
+                mSpringbackAnimation.setInterpolator(new DecelerateInterpolator());
+                mSpringbackAnimation.addUpdateListener(this);
+            } else if (mSpringbackAnimation.isRunning()) {
+                mSpringbackAnimation.end();
+            }
+            mISpringbackExecutor = springbackExecutor;
+            mSpringbackAnimation.setFloatValues(1f, 0f);
+            mSpringbackAnimation.setDuration(duration);
+            mSpringbackAnimation.start();
         }
-        mISpringbackExecutor = springbackExecutor;
-        mSpringbackAnimation.setFloatValues(1f, 0f);
-        mSpringbackAnimation.setDuration(duration);
-        mSpringbackAnimation.start();
     }
 
     @Override
@@ -487,7 +490,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
             scoll(0);
             mDistance = 0;
             /*移除持有*/
-            clean();
+            release();
         }
 
 
@@ -532,7 +535,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
             scoll(0);
             mDistance = 0;
             /*移除持有*/
-            clean();
+            release();
         }
 
 

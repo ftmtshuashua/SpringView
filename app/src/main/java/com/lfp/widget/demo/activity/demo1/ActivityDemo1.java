@@ -10,14 +10,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.lfp.widget.demo.R;
+import com.lfp.widget.demo.activity.adapter.RecyclerViewAdapter;
+import com.lfp.widget.demo.activity.util.DelayTask;
 import com.lfp.widget.springview.SpringView;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.lfp.widget.demo.activity.adapter.RecyclerViewAdapter;
-import com.lfp.widget.demo.activity.util.DelayTask;
 
 /**
  * Created by LiFuPing on 2018/3/17.
@@ -43,6 +42,8 @@ public class ActivityDemo1 extends AppCompatActivity {
 
         SpringView mSpringView = (SpringView) findViewById(R.id.view_SpringView);
         mSpringView.setSpringChild(mRefresh, mLoading);
+        mLoading.setRefeshFx(mRefresh);
+        mRefresh.setLoadingFx(mLoading);
 
 
         List<String> buildArray = new ArrayList<>();

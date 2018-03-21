@@ -17,7 +17,7 @@ public abstract class ImpSpringChild_Top extends ISpringChild {
     }
 
     @Override
-    public boolean checkHoldSpringView(SpringView.EdgeCheckUtil edgeCheckUtil, SpringView.TrendCheckUtil trendCheckUtil) {
+    public boolean onCheckHoldSpringView(SpringView.EdgeCheckUtil edgeCheckUtil, SpringView.TrendCheckUtil trendCheckUtil) {
         return edgeCheckUtil.isTopEdge() && trendCheckUtil.isTopSpring();
     }
 

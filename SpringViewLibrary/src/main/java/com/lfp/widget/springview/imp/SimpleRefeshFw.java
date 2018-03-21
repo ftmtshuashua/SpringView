@@ -11,7 +11,7 @@ import com.lfp.widget.springview.i.ISpringbackExecutor;
  * Created by LiFuPing on 2018/3/19.
  */
 
-public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpringbackExecutor {
+public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
 
     /*下拉刷新*/
     public static final int STATE_DOWN_REFESH = 4;
@@ -23,6 +23,8 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpri
     public static final int STATE_INIT = 3;
     /*刷新完成*/
     public static final int STATE_REFESH_FINISH = 5;
+    /*加载未结束*/
+    public static final int STATE_LOADING_NOT_OVER = 6;
 
 
     /*开始刷新*/
@@ -36,10 +38,18 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpri
     float mDistance;
     int mCurrentState;
 
+    SimpleLoadingFw mSimpleLoadingFw;
+
     @Override
     public float onSpring(View springContentView, float dis_y, float correction_distance_y) {
         mDistance += dis_y / 2;
         if (mDistance > mMaxHeight) mDistance = mMaxHeight;
+        if (mSimpleLoadingFw != null && mSimpleLoadingFw.isStartLoading()) {
+            setState(STATE_LOADING_NOT_OVER);
+            scrollTo(mDistance);
+            if (mDistance <= 0) onCancel();
+            return mDistance;
+        }
 
         if (isRefeshing()) {
             if (mDistance <= 0) {
@@ -89,7 +99,7 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpri
     public void onCancel() {
         mDistance = 0;
         scrollTo(0);
-        clean();
+        release();
     }
 
     @Override
@@ -111,16 +121,6 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpri
         }
     }
 
-    ISpringbackExecutor mStartRefeshSpringback = new ISpringbackExecutor() {
-        @Override
-        public void onSpringback(float rate) {
-
-            if (rate == 0) mDistance = mStartRefreshHeight;
-            float dis = (mDistance - mStartRefreshHeight) * rate + mStartRefreshHeight;
-            scrollTo(dis);
-
-        }
-    };
 
     /*判断是否在刷新中*/
     public boolean isRefeshing() {
@@ -142,13 +142,13 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpri
     }
 
 
-    @Override
-    public void onSpringback(float rate) {
-        scrollTo(mDistance * rate);
-        if (rate == 0) {
-            setState(STATE_INIT);
-            onCancel();
-        }
+    /**
+     * 绑定加载加载控件。当加载未结束，不允许刷新。
+     *
+     * @param loading 加载控件
+     */
+    public void setLoadingFx(SimpleLoadingFw loading) {
+        mSimpleLoadingFw = loading;
     }
 
     /*完成刷新*/
@@ -159,14 +159,52 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top implements ISpri
             if (mDistance <= 0) {
                 onCancel();
             } else { /*刷新完成*/
-                springback(this);
+                springback(mFinishRefeshSpringback, 500);
             }
-        } else springback(this);
+        } else springback(mCancelRefeshSpringback);
     }
 
     /**
      * 刷新事件回调
      */
     public abstract void onRefresh();
+
+    /*滚动到正在刷新单位置*/
+    ISpringbackExecutor mStartRefeshSpringback = new ISpringbackExecutor() {
+        @Override
+        public void onSpringback(float rate) {
+            if (rate == 0) mDistance = mStartRefreshHeight;
+            float dis = (mDistance - mStartRefreshHeight) * rate + mStartRefreshHeight;
+            scrollTo(dis);
+
+        }
+    };
+
+    /*取消事件*/
+    ISpringbackExecutor mCancelRefeshSpringback = new ISpringbackExecutor() {
+        @Override
+        public void onSpringback(float rate) {
+            scrollTo(mDistance * rate);
+            if (rate == 0) {
+                setState(STATE_INIT);
+                onCancel();
+            }
+        }
+    };
+
+    /*完成事件*/
+    ISpringbackExecutor mFinishRefeshSpringback = new ISpringbackExecutor() {
+        @Override
+        public void onSpringback(float rate) {
+            if (rate < 0.5f) scrollTo(mDistance * rate * 2);
+
+            if (rate == 0) {
+                setState(STATE_INIT);
+                onCancel();
+            }
+
+        }
+    };
+
 
 }

@@ -12,7 +12,7 @@ import com.lfp.widget.springview.i.ISpringbackExecutor;
  * Created by LiFuPing on 2018/3/20.
  */
 
-public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom implements ISpringbackExecutor {
+public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
 
     private static final long FLAG_START_LOADING = 0x1; /*开始加载*/
 
@@ -25,16 +25,27 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom implements I
     /*加载完成*/
     public static final int STATE_LOADING_FINISH = 5;
 
+    /*刷新未结束*/
+    public static final int STATE_REFRESH_NOT_OVER = 6;
+
     int mStartLoadingHeight;/*开始加载的高度*/
     float mDistance;
     long mFlag;
     int mCurrentState;
 
+    SimpleRefeshFw mSimpleRefeshFw;
 
     @Override
     public float onSpring(View springContentView, float dis_y, float correction_distance_y) {
         mDistance += dis_y / 2;
         if (mDistance < -mStartLoadingHeight) mDistance = -mStartLoadingHeight;
+
+        if (mSimpleRefeshFw != null && mSimpleRefeshFw.isRefeshing()) {
+            setState(STATE_REFRESH_NOT_OVER);
+            scrollTo(mDistance);
+            if (mDistance >= 0) onCancel();
+            return mDistance;
+        }
 
         if (!isStartLoading()) {
             if (mDistance < -mStartLoadingHeight * 0.95f) {
@@ -82,12 +93,14 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom implements I
     public void onCancel() {
         mDistance = 0;
         scrollTo(mDistance);
-        clean();
+        release();
     }
 
     @Override
     public void onFinish() {
-        if (!isStartLoading()) finishLoading();
+        if (!isStartLoading()) {
+            finishLoading();
+        }
     }
 
 
@@ -110,13 +123,14 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom implements I
         });
     }
 
-    @Override
-    public void onSpringback(float rate) {
-        scrollTo(mDistance * rate);
-        if (rate == 0) {
-            setState(STATE_INIT);
-            onCancel();
-        }
+
+    /**
+     * 绑定刷新加载控件。当刷新未结束，不允许加载。
+     *
+     * @param refesh 刷新控件
+     */
+    public void setRefeshFx(SimpleRefeshFw refesh) {
+        mSimpleRefeshFw = refesh;
     }
 
     /*完成加载*/
@@ -124,9 +138,34 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom implements I
         if (isStartLoading()) {
             mFlag &= ~FLAG_START_LOADING;
             setState(STATE_LOADING_FINISH);
-            springback(this);
-        } else springback(this);
+            springback(mFinishLoadding, 500);
+        } else springback(mCancelLoadding);
     }
 
     public abstract void onLoading();
+
+    /*完成事件*/
+    ISpringbackExecutor mFinishLoadding = new ISpringbackExecutor() {
+        @Override
+        public void onSpringback(float rate) {
+            if (rate < 0.5f) scrollTo(mDistance * rate * 2);
+
+            if (rate == 0) {
+                setState(STATE_INIT);
+                onCancel();
+            }
+        }
+    };
+    /*取消事件*/
+    ISpringbackExecutor mCancelLoadding = new ISpringbackExecutor() {
+        @Override
+        public void onSpringback(float rate) {
+            scrollTo(mDistance * rate);
+
+            if (rate == 0) {
+                setState(STATE_INIT);
+                onCancel();
+            }
+        }
+    };
 }

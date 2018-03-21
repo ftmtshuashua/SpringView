@@ -34,7 +34,7 @@ public abstract class CustomHeaderLayout extends ImpSpringChild_Top implements V
     @Override
     public void onCancel() {
         scroll(0);
-        clean();
+        release();
     }
 
     @Override

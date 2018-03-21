@@ -33,6 +33,9 @@ public abstract class SimpleHeader extends SimpleRefeshFw {
     protected void onRefreshStateChange(int state) {
         mProgressBar.setVisibility(state == SimpleRefeshFw.STATE_START_REFESH ? View.VISIBLE : View.GONE);
         switch (state) {
+            case SimpleRefeshFw.STATE_LOADING_NOT_OVER:
+                mTV_Info.setText("加载未完成,请稍后...");
+                break;
             case SimpleRefeshFw.STATE_DOWN_REFESH:
             case SimpleRefeshFw.STATE_INIT:
                 mTV_Info.setText("下拉刷新");
