@@ -96,6 +96,10 @@ public abstract class ISpringChild implements ISpringHolders {
 
     /**
      * 检查是否需要持有这个SpringView，当SpringView被持有的时候，他将接管SpringView的所有操作
+     *
+     * @param edgeCheckUtil  边缘检测器
+     * @param trendCheckUtil 手势检测器
+     * @return 是否拦截SpringView的事件
      */
     public abstract boolean onCheckHoldSpringView(SpringView.EdgeCheckUtil edgeCheckUtil, SpringView.TrendCheckUtil trendCheckUtil);
 
