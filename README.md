@@ -10,7 +10,7 @@ SpringView是一个继承于FrameLayout的轻量级弹性布局,主要负责弹�
 使用 Gradle:
 ```
 dependencies {
-   compile 'com.lfp.widget:SpringViewLibrary:1.0.3'
+   compile 'com.lfp.widget:SpringViewLibrary:1.0.5'
 }
 ```
 

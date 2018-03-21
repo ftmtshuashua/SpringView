@@ -37,6 +37,7 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
     int mMaxHeight; /*允许拉动的最大高度*/
     float mDistance;
     int mCurrentState;
+    long mFinishAnimationDuration = 800l; /*完成动画持续时间*/
 
     SimpleLoadingFw mSimpleLoadingFw;
 
@@ -58,6 +59,15 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
 
     private boolean isStartLoading() {
         return mSimpleLoadingFw != null && mSimpleLoadingFw.isStartLoading();
+    }
+
+    /**
+     * 设置完成动画持续时间
+     *
+     * @param duration 持续事件
+     */
+    public void setFinishAnimationDuration(long duration) {
+        mFinishAnimationDuration = duration;
     }
 
     @Override
@@ -179,7 +189,7 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
             if (mDistance <= 0) {
                 onCancel();
             } else { /*刷新完成*/
-                springback(mFinishRefeshSpringback, 500);
+                springback(mFinishRefeshSpringback, mFinishAnimationDuration);
             }
         } else springback(mCancelRefeshSpringback);
     }
@@ -193,9 +203,13 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
     ISpringbackExecutor mStartRefeshSpringback = new ISpringbackExecutor() {
         @Override
         public void onSpringback(float rate) {
-            if (rate == 0) mDistance = mStartRefreshHeight;
-            float dis = (mDistance - mStartRefreshHeight) * rate + mStartRefreshHeight;
-            scrollTo(dis);
+            if (rate == 0) {
+                mDistance = mStartRefreshHeight;
+                scrollTo(mDistance);
+            } else {
+                float dis = (mDistance - mStartRefreshHeight) * rate + mStartRefreshHeight;
+                scrollTo(dis);
+            }
 
         }
     };
@@ -214,9 +228,13 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
 
     /*完成事件*/
     ISpringbackExecutor mFinishRefeshSpringback = new ISpringbackExecutor() {
+        float mWaitingProportion = 250f / mFinishAnimationDuration;
+
         @Override
         public void onSpringback(float rate) {
-            if (rate < 0.5f) scrollTo(mDistance * rate * 2);
+            if (rate < mWaitingProportion) {
+                scrollTo(mDistance * rate / mWaitingProportion);
+            }
 
             if (rate == 0) {
                 setState(STATE_INIT);

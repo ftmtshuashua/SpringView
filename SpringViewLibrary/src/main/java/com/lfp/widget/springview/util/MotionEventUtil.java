@@ -211,7 +211,7 @@ public class MotionEventUtil {
         public boolean isMove() {
             boolean isMove = mOldTouchMove_X != DEFAULT && mOldTouchMove_Y != DEFAULT;
             if (isMove)
-                isMove = mOldTouchMove_X != mTouchMove_X && mOldTouchMove_Y != mTouchMove_Y;
+                isMove = mOldTouchMove_X != mTouchMove_X || mOldTouchMove_Y != mTouchMove_Y;
             return isMove;
         }
 

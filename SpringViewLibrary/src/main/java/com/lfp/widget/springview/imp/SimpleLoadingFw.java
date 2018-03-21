@@ -32,8 +32,18 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
     float mDistance;
     long mFlag;
     int mCurrentState;
+    long mFinishAnimationDuration = 800l; /*完成动画持续时间*/
 
     SimpleRefeshFw mSimpleRefeshFw;
+
+    /**
+     * 设置完成动画持续时间
+     *
+     * @param duration 持续事件
+     */
+    public void setFinishAnimationDuration(long duration) {
+        mFinishAnimationDuration = duration;
+    }
 
     @Override
     public float onSpring(View springContentView, float dis_y, float correction_distance_y) {
@@ -68,10 +78,6 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
     void scrollTo(float dis) {
         getView().setTranslationY((int) dis);
         getParent().getContentView().setTranslationY(dis);
-
-//        FrameLayout.LayoutParams mParams = (FrameLayout.LayoutParams) getParent().getContentView().getLayoutParams();
-//        mParams.bottomMargin = -(int) dis;
-//        getParent().getContentView().requestLayout();
     }
 
     public boolean isStartLoading() {
@@ -137,7 +143,7 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
         if (isStartLoading()) {
             mFlag &= ~FLAG_START_LOADING;
             setState(STATE_LOADING_FINISH);
-            springback(mFinishLoadding, 500);
+            springback(mFinishLoadding, mFinishAnimationDuration);
         } else springback(mCancelLoadding);
     }
 
@@ -145,9 +151,12 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
 
     /*完成事件*/
     ISpringbackExecutor mFinishLoadding = new ISpringbackExecutor() {
+        float mWaitingProportion = 250f / mFinishAnimationDuration;
         @Override
         public void onSpringback(float rate) {
-            if (rate < 0.5f) scrollTo(mDistance * rate * 2);
+            if (rate < mWaitingProportion) {
+                scrollTo(mDistance * rate / mWaitingProportion);
+            }
 
             if (rate == 0) {
                 setState(STATE_INIT);

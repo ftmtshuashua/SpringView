@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 2
+        targetSdkVersion 25
 
         versionCode 10148
         versionName "1.0.1"
@@ -42,7 +42,7 @@ ext {
     siteUrl = 'https://github.com/ftmtshuashua/SpringView'
     gitUrl = 'https://github.com/ftmtshuashua/SpringView.git'
 
-    libraryVersion = '1.0.3'
+    libraryVersion = '1.0.5'
 
     developerId = 'ftmtshuashua'
     developerName = 'LiFuPing'

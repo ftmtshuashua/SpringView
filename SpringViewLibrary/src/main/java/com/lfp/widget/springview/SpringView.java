@@ -6,7 +6,6 @@ import android.content.Context;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewConfigurationCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -260,27 +259,6 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         return mContentView;
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        if ((mFlag & FLAG_OPEN_SPRINGBACK) != 0) {
-            for (ISpringChild child : mSpringChild) {
-                if (child.getGroupId() == SimperSpringTop.GROUP_ID)
-                    mFlag &= ~FLAG_OPEN_SPRINGBACK_TOP;
-                else if (child.getGroupId() == SimperSpringBottom.GROUP_ID)
-                    mFlag &= ~FLAG_OPEN_SPRINGBACK_BOTTOM;
-            }
-        }
-
-        if ((mFlag & FLAG_OPEN_SPRINGBACK) != 0) {
-            List<ISpringChild> springChilds = new ArrayList<>();
-            if ((mFlag & FLAG_OPEN_SPRINGBACK_TOP) != 0) springChilds.add(new SimperSpringTop());
-            if ((mFlag & FLAG_OPEN_SPRINGBACK_BOTTOM) != 0)
-                springChilds.add(new SimperSpringBottom());
-            addSpringChild(springChilds);
-        }
-    }
-
     /*边缘检测 */
     public static final class EdgeCheckUtil {
         /* 标识View的状态   1111 0000 0000 */
@@ -405,7 +383,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         int mGroupId;
 
         private boolean registerHolder(ISpringHolders holder) {
-            if (isHold() && mGroupId != holder.getGroupId()) return false;
+            if ((isHold() && mGroupId != holder.getGroupId()) || isHold(holder)) return false;
             mGroupId = holder.getGroupId();
             return mRegisterHoldersArray.add(holder);
         }
@@ -429,9 +407,28 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         }
     }
 
-    /*启用回弹效果*/
+    /**
+     * 启用回弹效果
+     */
     public void enableSpringback() {
         setFlag(FLAG_OPEN_SPRINGBACK);
+
+        if ((mFlag & FLAG_OPEN_SPRINGBACK) != 0) {
+            for (ISpringChild child : mSpringChild) {
+                if (child.getGroupId() == SimperSpringTop.GROUP_ID)
+                    mFlag &= ~FLAG_OPEN_SPRINGBACK_TOP;
+                else if (child.getGroupId() == SimperSpringBottom.GROUP_ID)
+                    mFlag &= ~FLAG_OPEN_SPRINGBACK_BOTTOM;
+            }
+        }
+
+        if ((mFlag & FLAG_OPEN_SPRINGBACK) != 0) {
+            List<ISpringChild> springChilds = new ArrayList<>();
+            if ((mFlag & FLAG_OPEN_SPRINGBACK_TOP) != 0) springChilds.add(new SimperSpringTop());
+            if ((mFlag & FLAG_OPEN_SPRINGBACK_BOTTOM) != 0)
+                springChilds.add(new SimperSpringBottom());
+            addSpringChild(springChilds);
+        }
     }
 
     /*-------------------------回弹效果--------------------------*/
@@ -465,7 +462,6 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     @Override
     public void onAnimationUpdate(ValueAnimator animation) {
         float value = (float) animation.getAnimatedValue();
-        Log.e("--onAnimationUpdate",""+value);
         if (value == 0) {
             mFlag &= ~FLAG_PAUSE_TOUCHE_EVENT;
         } else mFlag |= FLAG_PAUSE_TOUCHE_EVENT;
