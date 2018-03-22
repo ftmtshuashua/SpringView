@@ -1,10 +1,13 @@
 package com.lfp.widget.springview.imp;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 
 import com.lfp.widget.springview.SpringView;
 import com.lfp.widget.springview.i.ISpringbackExecutor;
+
+import java.text.MessageFormat;
 
 /**
  * 一个简单的刷新框架
@@ -68,6 +71,7 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
      */
     public void setFinishAnimationDuration(long duration) {
         mFinishAnimationDuration = duration;
+        mFinishRefeshSpringback.setDuration(duration);
     }
 
     @Override
@@ -199,10 +203,10 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
      */
     public abstract void onRefresh();
 
-    /*滚动到正在刷新单位置*/
+    /*滚动到正在刷新的位置*/
     ISpringbackExecutor mStartRefeshSpringback = new ISpringbackExecutor() {
         @Override
-        public void onSpringback(float rate) {
+        public void onSpringback(float rate, long currentPlayTime) {
             if (rate == 0) {
                 mDistance = mStartRefreshHeight;
                 scrollTo(mDistance);
@@ -217,7 +221,7 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
     /*取消事件*/
     ISpringbackExecutor mCancelRefeshSpringback = new ISpringbackExecutor() {
         @Override
-        public void onSpringback(float rate) {
+        public void onSpringback(float rate, long currentPlayTime) {
             scrollTo(mDistance * rate);
             if (rate == 0) {
                 setState(STATE_INIT);
@@ -227,27 +231,12 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
     };
 
     /*完成事件*/
-    ISpringbackExecutor mFinishRefeshSpringback = new ISpringbackExecutor() {
-        float mWaitingProportion = 250f / mFinishAnimationDuration;
-
-        @Override
-        public void onSpringback(float rate) {
-            if (rate < mWaitingProportion) {
-                scrollTo(mDistance * rate / mWaitingProportion);
-            }
-
-            if (rate == 0) {
-                setState(STATE_INIT);
-                onCancel();
-            }
-
-        }
-    };
+    FinishRefeshSpringBack mFinishRefeshSpringback = new FinishRefeshSpringBack(mFinishAnimationDuration);
 
     /*自动刷新事件事件*/
     ISpringbackExecutor mAutoRefeshSpringback = new ISpringbackExecutor() {
         @Override
-        public void onSpringback(float rate) {
+        public void onSpringback(float rate, long currentPlayTime) {
             if (rate == 1) {
                 mFlag |= FLAG_START_REFESH;
                 setState(STATE_START_REFESH);
@@ -259,5 +248,36 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
             if (rate == 0) onRefresh();
         }
     };
+
+    /*完成事件动画*/
+    private final class FinishRefeshSpringBack implements ISpringbackExecutor {
+        float mWaitingProportion;/*回弹效果比例*/
+        long mDurationTime; /*动画持续时间*/
+        double mOffset = 0;
+
+        public FinishRefeshSpringBack(long duration) {
+            setDuration(duration);
+        }
+
+        public void setDuration(long duration) {
+            mDurationTime = duration;
+            mWaitingProportion = 250f / duration;
+        }
+
+        @Override
+        public void onSpringback(float rate, long currentPlayTime) {
+            if (currentPlayTime == 0) mOffset = 0;
+            if (mDurationTime * (1 - mWaitingProportion) < currentPlayTime) {
+                if (mOffset == 0) mOffset = rate;
+                float dis = (float) (mDistance * rate / mOffset);
+                scrollTo(dis);
+            }
+
+            if (rate == 0) {
+                onCancel();
+                setState(STATE_INIT);
+            }
+        }
+    }
 
 }

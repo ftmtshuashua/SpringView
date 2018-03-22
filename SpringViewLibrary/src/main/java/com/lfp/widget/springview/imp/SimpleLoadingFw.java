@@ -32,7 +32,7 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
     float mDistance;
     long mFlag;
     int mCurrentState;
-    long mFinishAnimationDuration = 800l; /*完成动画持续时间*/
+    long mFinishAnimationDuration = 500l; /*完成动画持续时间*/
 
     SimpleRefeshFw mSimpleRefeshFw;
 
@@ -43,6 +43,7 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
      */
     public void setFinishAnimationDuration(long duration) {
         mFinishAnimationDuration = duration;
+        mFinishLoadding.setDuration(duration);
     }
 
     @Override
@@ -150,24 +151,11 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
     public abstract void onLoading();
 
     /*完成事件*/
-    ISpringbackExecutor mFinishLoadding = new ISpringbackExecutor() {
-        float mWaitingProportion = 250f / mFinishAnimationDuration;
-        @Override
-        public void onSpringback(float rate) {
-            if (rate < mWaitingProportion) {
-                scrollTo(mDistance * rate / mWaitingProportion);
-            }
-
-            if (rate == 0) {
-                setState(STATE_INIT);
-                onCancel();
-            }
-        }
-    };
+    FinishLoadingSpringBack mFinishLoadding = new FinishLoadingSpringBack(mFinishAnimationDuration);
     /*取消事件*/
     ISpringbackExecutor mCancelLoadding = new ISpringbackExecutor() {
         @Override
-        public void onSpringback(float rate) {
+        public void onSpringback(float rate, long currentPlayTime) {
             scrollTo(mDistance * rate);
 
             if (rate == 0) {
@@ -176,4 +164,36 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
             }
         }
     };
+
+
+    /*完成事件动画*/
+    private final class FinishLoadingSpringBack implements ISpringbackExecutor {
+        float mWaitingProportion;/*回弹效果比例*/
+        long mDurationTime; /*动画持续时间*/
+        double mOffset = 0;
+
+        public FinishLoadingSpringBack(long duration) {
+            setDuration(duration);
+        }
+
+        public void setDuration(long duration) {
+            mDurationTime = duration;
+            mWaitingProportion = 250f / duration;
+        }
+
+        @Override
+        public void onSpringback(float rate, long currentPlayTime) {
+            if (currentPlayTime == 0) mOffset = 0;
+            if (mDurationTime * (1 - mWaitingProportion) < currentPlayTime) {
+                if (mOffset == 0) mOffset = rate;
+                float dis = (float) (mDistance * rate / mOffset);
+                scrollTo(dis);
+            }
+
+            if (rate == 0) {
+                onCancel();
+                setState(STATE_INIT);
+            }
+        }
+    }
 }

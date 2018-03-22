@@ -12,8 +12,8 @@ public interface ISpringHolders {
     /**
      * @param springContentView     SpringView中的内容View
      * @param dis_y                 Y轴一次手势滑动的位移
-     * @param correction_distance_y 上一个Holders控制之后单最终位置,如果是第一个Holders 那么它单值是 0
-     * @return 返回实际单位移值
+     * @param correction_distance_y 上一个Holders控制之后的最终位置,如果是第一个Holders 那么它的值是 0
+     * @return 返回实际的位移值
      */
     float onSpring(View springContentView, float dis_y, float correction_distance_y);
 

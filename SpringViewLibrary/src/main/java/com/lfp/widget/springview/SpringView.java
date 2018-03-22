@@ -6,10 +6,12 @@ import android.content.Context;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewConfigurationCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 
 import com.lfp.widget.springview.i.ISpringChild;
@@ -19,6 +21,7 @@ import com.lfp.widget.springview.imp.ImpSpringChild_Bottom;
 import com.lfp.widget.springview.imp.ImpSpringChild_Top;
 import com.lfp.widget.springview.util.MotionEventUtil;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -447,7 +450,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
             mFlag |= FLAG_PAUSE_TOUCHE_EVENT;
             if (mSpringbackAnimation == null) {
                 mSpringbackAnimation = ValueAnimator.ofFloat(1f, 0f);
-                mSpringbackAnimation.setInterpolator(new DecelerateInterpolator());
+                mSpringbackAnimation.setInterpolator(new LinearInterpolator());
                 mSpringbackAnimation.addUpdateListener(this);
             } else if (mSpringbackAnimation.isRunning()) {
                 mSpringbackAnimation.end();
@@ -465,7 +468,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         if (value == 0) {
             mFlag &= ~FLAG_PAUSE_TOUCHE_EVENT;
         } else mFlag |= FLAG_PAUSE_TOUCHE_EVENT;
-        if (mISpringbackExecutor != null) mISpringbackExecutor.onSpringback(value);
+        if (mISpringbackExecutor != null) mISpringbackExecutor.onSpringback(value,animation.getCurrentPlayTime());
 
     }
 
@@ -507,7 +510,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         }
 
         @Override
-        public void onSpringback(float rate) {
+        public void onSpringback(float rate, long currentPlayTime) {
             scoll(mDistance * rate);
             if (rate == 0) onCancel();
         }
@@ -552,7 +555,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         }
 
         @Override
-        public void onSpringback(float rate) {
+        public void onSpringback(float rate, long currentPlayTime) {
             scoll(mDistance * rate);
             if (rate == 0) onCancel();
         }

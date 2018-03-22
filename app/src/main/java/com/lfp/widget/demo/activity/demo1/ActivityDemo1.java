@@ -44,6 +44,7 @@ public class ActivityDemo1 extends AppCompatActivity {
         mSpringView.setSpringChild(mRefresh, mLoading);
         mLoading.setRefeshFx(mRefresh);
         mRefresh.setLoadingFx(mLoading);
+        mRefresh.setFinishAnimationDuration(1000);
 
 
         List<String> buildArray = new ArrayList<>();

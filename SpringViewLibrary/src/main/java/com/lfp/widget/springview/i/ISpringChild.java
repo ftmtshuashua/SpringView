@@ -7,7 +7,7 @@ import android.widget.FrameLayout;
 import com.lfp.widget.springview.SpringView;
 
 /**
- * 划拉效果控制类，该类控制和接收SpringView的滑动事件，并控制SpringView单响应逻辑
+ * 划拉效果控制类，该类控制和接收SpringView的滑动事件，并控制SpringView的响应逻辑
  * Created by LiFuPing on 2018/3/12.
  */
 
@@ -69,7 +69,7 @@ public abstract class ISpringChild implements ISpringHolders {
     }
 
     /**
-     * 回弹(调用SpringView已经定义好单一种回弹方式,这个方式也可以自己实现)
+     * 回弹(调用SpringView已经定义好的一种回弹方式,这个方式也可以自己实现)
      *
      * @param ise 执行回调，回弹逻辑实现的地方
      */
@@ -78,7 +78,7 @@ public abstract class ISpringChild implements ISpringHolders {
     }
 
     /**
-     * 回弹(调用SpringView已经定义好单一种回弹方式,这个方式也可以自己实现)
+     * 回弹(调用SpringView已经定义好的一种回弹方式,这个方式也可以自己实现)
      *
      * @param ise      执行回调，回弹逻辑实现的地方
      * @param duration 执行时间

@@ -10,7 +10,7 @@ SpringView是一个继承于FrameLayout的轻量级弹性布局,主要负责弹�
 使用 Gradle:
 ```
 dependencies {
-   compile 'com.lfp.widget:SpringViewLibrary:1.0.5'
+   compile 'com.lfp.widget:SpringViewLibrary:1.0.7'
 }
 ```
 
@@ -27,7 +27,7 @@ dependencies {
 
            <ListView
                android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+                        android:layout_height="match_parent"/>
 
 </com.lfp.widget.springview.SpringView>
 ```
@@ -51,7 +51,13 @@ mSpringView.enableSpringback();
 Acitivity(){
     onCreate(){
         SpringView mSpringView = (SpringView) findViewById(R.id.layout_SpringView);
+        //设置Head和Foot
         mSpringView.setSpringChild(mRefresh, mLoading);
+        //配置刷新和加载互斥
+        mLoading.setRefeshFx(mRefresh);
+        mRefresh.setLoadingFx(mLoading);
+        //设置完成动画执行时间
+        mRefresh.setFinishAnimationDuration(1000);
     }
 
     SimpleHeader mRefresh = new SimpleHeader() {
