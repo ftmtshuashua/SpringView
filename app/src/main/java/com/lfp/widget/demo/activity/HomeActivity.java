@@ -18,7 +18,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_home);
 
         SpringView mSpringView = (SpringView) findViewById(R.id.layout_RootView);
-        mSpringView.enableSpringback();
+//        mSpringView.enableSpringback();/*可在xml中配置*/
 
         findViewById(R.id.view_Demo1).setOnClickListener(this);
         findViewById(R.id.view_Demo2).setOnClickListener(this);

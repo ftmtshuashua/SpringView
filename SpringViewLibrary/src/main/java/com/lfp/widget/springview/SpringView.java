@@ -3,6 +3,7 @@ package com.lfp.widget.springview;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewConfigurationCompat;
 import android.util.AttributeSet;
@@ -10,7 +11,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 
@@ -33,7 +33,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     /**
      * 开启回弹效果 - 给SpringView设置SpringChild会覆盖该效果
      */
-    public static final long FLAG_OPEN_SPRINGBACK = 0xF;
+    public static final long FLAG_OPEN_SPRINGBACK = 0x3;
     /**
      * 开启顶部回弹效果 - 当SpringView中午SpringChild的时候生效
      */
@@ -53,7 +53,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
      */
     public static final long FLAG_PAUSE_TOUCHE_EVENT = 0x20;
 
-    long mFlag;
+    long mSpringFlag;
     int mTouchSlop;/*被认为是滑动的最小位移像素*/
 
     MotionEventUtil mMotionEventUtil;/*手势检查*/
@@ -84,18 +84,22 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     }
 
     public SpringView(Context context) {
-        super(context);
-        init();
+        this(context, null);
     }
 
     public SpringView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+        this(context, attrs, 0);
     }
 
     public SpringView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
+        if (attrs != null) {
+            TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.SpringView);
+            boolean isen = ta.getBoolean(R.styleable.SpringView_enable_springback, false);
+            if (isen) enableSpringback();
+            ta.recycle();
+        }
     }
 
     void init() {
@@ -146,6 +150,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
             if (contentView != null) removeView(contentView);
             mSpringChild.remove(child);
         }
+        checkEnableSpringback();
     }
 
     /**
@@ -173,11 +178,12 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
             child.getView(getContext(), this);
             mSpringChild.add(child);
         }
+        checkEnableSpringback();
         requestLayout();
     }
 
     public void setFlag(long flag) {
-        mFlag |= flag;
+        mSpringFlag |= flag;
     }
 
     @Override
@@ -185,7 +191,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         mMotionEventUtil.onDispatchTouchEvent(ev);
         mEdgeCheckUtil.checkEdge(getContentView()); /*获得当前内容布局的边缘状态*/
 
-        if ((mFlag & FLAG_PAUSE_TOUCHE_EVENT) != 0) return true;
+        if ((mSpringFlag & FLAG_PAUSE_TOUCHE_EVENT) != 0) return true;
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: {
                 mTrendCheckUtil.clean();
@@ -203,7 +209,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
                         if (is) {
                             registerHolder(child);
 
-                            mFlag |= FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN;
+                            mSpringFlag |= FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN;
                             int action = ev.getAction();
                             ev.setAction(MotionEvent.ACTION_CANCEL);
                             super.dispatchTouchEvent(ev);
@@ -212,8 +218,8 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
                     }
                 }
 
-                if (((mFlag & FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN) != 0) && !mSpringHoldersUtil.isHold()) {
-                    mFlag &= ~FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN;
+                if (((mSpringFlag & FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN) != 0) && !mSpringHoldersUtil.isHold()) {
+                    mSpringFlag &= ~FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN;
                     int action = ev.getAction();
                     ev.setAction(MotionEvent.ACTION_DOWN);
                     super.dispatchTouchEvent(ev);
@@ -415,23 +421,33 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
      */
     public void enableSpringback() {
         setFlag(FLAG_OPEN_SPRINGBACK);
+        checkEnableSpringback();
+    }
 
-        if ((mFlag & FLAG_OPEN_SPRINGBACK) != 0) {
+    /*检查是否启用回弹*/
+    private void checkEnableSpringback() {
+        long flag = mSpringFlag;
+        if ((flag & FLAG_OPEN_SPRINGBACK) != 0) {
             for (ISpringChild child : mSpringChild) {
-                if (child.getGroupId() == SimperSpringTop.GROUP_ID)
-                    mFlag &= ~FLAG_OPEN_SPRINGBACK_TOP;
-                else if (child.getGroupId() == SimperSpringBottom.GROUP_ID)
-                    mFlag &= ~FLAG_OPEN_SPRINGBACK_BOTTOM;
+                if (child.getGroupId() == SimperSpringTop.GROUP_ID) {
+                    flag &= ~FLAG_OPEN_SPRINGBACK_TOP;
+                } else if (child.getGroupId() == SimperSpringBottom.GROUP_ID) {
+                    flag &= ~FLAG_OPEN_SPRINGBACK_BOTTOM;
+                }
+            }
+
+            if ((flag & FLAG_OPEN_SPRINGBACK) != 0) {
+                List<ISpringChild> springChilds = new ArrayList<>();
+                if ((flag & FLAG_OPEN_SPRINGBACK_TOP) != 0) {
+                    springChilds.add(new SimperSpringTop());
+                }
+                if ((flag & FLAG_OPEN_SPRINGBACK_BOTTOM) != 0) {
+                    springChilds.add(new SimperSpringBottom());
+                }
+                if (!springChilds.isEmpty()) addSpringChild(springChilds);
             }
         }
 
-        if ((mFlag & FLAG_OPEN_SPRINGBACK) != 0) {
-            List<ISpringChild> springChilds = new ArrayList<>();
-            if ((mFlag & FLAG_OPEN_SPRINGBACK_TOP) != 0) springChilds.add(new SimperSpringTop());
-            if ((mFlag & FLAG_OPEN_SPRINGBACK_BOTTOM) != 0)
-                springChilds.add(new SimperSpringBottom());
-            addSpringChild(springChilds);
-        }
     }
 
     /*-------------------------回弹效果--------------------------*/
@@ -447,7 +463,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
      */
     public void starSpringback(ISpringChild child, final ISpringbackExecutor springbackExecutor, long duration) {
         if (mSpringHoldersUtil.isHold(child)) {
-            mFlag |= FLAG_PAUSE_TOUCHE_EVENT;
+            mSpringFlag |= FLAG_PAUSE_TOUCHE_EVENT;
             if (mSpringbackAnimation == null) {
                 mSpringbackAnimation = ValueAnimator.ofFloat(1f, 0f);
                 mSpringbackAnimation.setInterpolator(new LinearInterpolator());
@@ -466,9 +482,10 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     public void onAnimationUpdate(ValueAnimator animation) {
         float value = (float) animation.getAnimatedValue();
         if (value == 0) {
-            mFlag &= ~FLAG_PAUSE_TOUCHE_EVENT;
-        } else mFlag |= FLAG_PAUSE_TOUCHE_EVENT;
-        if (mISpringbackExecutor != null) mISpringbackExecutor.onSpringback(value,animation.getCurrentPlayTime());
+            mSpringFlag &= ~FLAG_PAUSE_TOUCHE_EVENT;
+        } else mSpringFlag |= FLAG_PAUSE_TOUCHE_EVENT;
+        if (mISpringbackExecutor != null)
+            mISpringbackExecutor.onSpringback(value, animation.getCurrentPlayTime());
 
     }
 
