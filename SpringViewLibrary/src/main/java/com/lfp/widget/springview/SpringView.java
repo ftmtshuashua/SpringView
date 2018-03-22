@@ -7,7 +7,6 @@ import android.content.res.TypedArray;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewConfigurationCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -21,7 +20,6 @@ import com.lfp.widget.springview.imp.ImpSpringChild_Bottom;
 import com.lfp.widget.springview.imp.ImpSpringChild_Top;
 import com.lfp.widget.springview.util.MotionEventUtil;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,11 +45,16 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
      * 重新开始ContentView的滚动事件
      */
     private static final long FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN = 0x10;
+    /**
+     * 表示滚动中状态
+     */
+    private static final long FLAG_IS_ROLLING = 0x40;
 
     /**
-     * 暂停手势事件事件
+     * 暂停滑动事件 , 使得SpringView无法开始弹动，但是可以点击
      */
-    public static final long FLAG_PAUSE_TOUCHE_EVENT = 0x20;
+    public static final long FLAG_PAUSE_SCROLL_EVENT = 0x20;
+
 
     long mSpringFlag;
     int mTouchSlop;/*被认为是滑动的最小位移像素*/
@@ -103,7 +106,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     }
 
     void init() {
-        mTouchSlop = ViewConfigurationCompat.getScaledPagingTouchSlop(ViewConfiguration.get(getContext()));
+        mTouchSlop = ViewConfigurationCompat.getScaledPagingTouchSlop(ViewConfiguration.get(getContext())) / 2;
         mMotionEventUtil = new MotionEventUtil();
         mMotionEventUtil.setTrajectory(true);
         mEdgeCheckUtil = new EdgeCheckUtil();
@@ -186,38 +189,53 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         mSpringFlag |= flag;
     }
 
+
+    /*清除子View的事件*/
+    void cancelChildMotionEvent(MotionEvent ev) {
+        int action = ev.getAction();
+        ev.setAction(MotionEvent.ACTION_CANCEL);
+        super.dispatchTouchEvent(ev);
+        ev.setAction(action);
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         mMotionEventUtil.onDispatchTouchEvent(ev);
         mEdgeCheckUtil.checkEdge(getContentView()); /*获得当前内容布局的边缘状态*/
 
-        if ((mSpringFlag & FLAG_PAUSE_TOUCHE_EVENT) != 0) return true;
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: {
                 mTrendCheckUtil.clean();
+                mSpringFlag &= ~FLAG_IS_ROLLING;
             }
             break;
             case MotionEvent.ACTION_MOVE: {
                 mTrendCheckUtil.setTouchMove(mMotionEventUtil.getMaxDistanceEvent());
-                for (ISpringChild child : mSpringChild) {
-                    if (!mSpringHoldersUtil.isHold() || (!mSpringHoldersUtil.isHold(child) && child.getGroupId() == mSpringHoldersUtil.getGroupId())) {
-                        boolean is = child.onCheckHoldSpringView(mEdgeCheckUtil, mTrendCheckUtil) && (mSpringHoldersUtil.isHold() ? true : mTouchSlop <= mTrendCheckUtil.getToucheDistance());
-                        if (is && !mSpringHoldersUtil.isHold()) {
-                            mTrendCheckUtil.clean();
-                            mTrendCheckUtil.setTouchMove(mMotionEventUtil.getMaxDistanceEvent());
-                        }
-                        if (is) {
-                            registerHolder(child);
+                if (!isScroll()) {
+                    if (mTouchSlop <= mTrendCheckUtil.getToucheDistance())
+                        mSpringFlag |= FLAG_IS_ROLLING;
+                }
 
-                            mSpringFlag |= FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN;
-                            int action = ev.getAction();
-                            ev.setAction(MotionEvent.ACTION_CANCEL);
-                            super.dispatchTouchEvent(ev);
-                            ev.setAction(action);
+                /*检查SpringChild是否开始执行*/
+                if (!isPauseScroll()) {
+                    for (ISpringChild child : mSpringChild) {
+                        if (!mSpringHoldersUtil.isHold() || (!mSpringHoldersUtil.isHold(child) && child.getGroupId() == mSpringHoldersUtil.getGroupId())) {
+                            boolean is = child.onCheckHoldSpringView(mEdgeCheckUtil, mTrendCheckUtil) && (mSpringHoldersUtil.isHold() ? true : isScroll());
+                            if (is && !mSpringHoldersUtil.isHold()) {
+                                mTrendCheckUtil.clean();
+                                mTrendCheckUtil.setTouchMove(mMotionEventUtil.getMaxDistanceEvent());
+                            }
+                            if (is) {
+                                registerHolder(child);
+
+                                mSpringFlag |= FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN;
+                                cancelChildMotionEvent(ev);
+                            }
                         }
                     }
                 }
 
+                /*当SpringChild全部释放的时候，重启ContentView的滚动事件*/
                 if (((mSpringFlag & FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN) != 0) && !mSpringHoldersUtil.isHold()) {
                     mSpringFlag &= ~FLAG_TOUCHE_EVENT_START_ALL_OVER_AGAIN;
                     int action = ev.getAction();
@@ -227,10 +245,15 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
                 }
 
                 if (mSpringHoldersUtil.isHold()) {
-                    float correction_distance = 0;
-                    for (int i = mSpringHoldersUtil.mRegisterHoldersArray.size() - 1; i >= 0; i--) {
-                        ISpringHolders hold = mSpringHoldersUtil.mRegisterHoldersArray.get(i);
-                        correction_distance = hold.onSpring(getContentView(), mTrendCheckUtil.getDistanceY(), correction_distance);
+                    if (isScroll()) {
+                        if (isPauseScroll()) return true;
+                        float correction_distance = 0;
+                        for (int i = mSpringHoldersUtil.mRegisterHoldersArray.size() - 1; i >= 0; i--) {
+                            ISpringHolders hold = mSpringHoldersUtil.mRegisterHoldersArray.get(i);
+                            correction_distance = hold.onSpring(getContentView(), mTrendCheckUtil.getDistanceY(), correction_distance);
+                        }
+                    } else {
+                        super.dispatchTouchEvent(ev);
                     }
                     return true;
                 }
@@ -238,9 +261,14 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
             break;
             case MotionEvent.ACTION_UP:
                 if (mSpringHoldersUtil.isHold()) {
-                    for (int i = mSpringHoldersUtil.mRegisterHoldersArray.size() - 1; i >= 0; i--) {
-                        ISpringHolders hold = mSpringHoldersUtil.mRegisterHoldersArray.get(i);
-                        hold.onFinish();
+                    if (isScroll()) {
+                        if (isPauseScroll()) return true;
+                        for (int i = mSpringHoldersUtil.mRegisterHoldersArray.size() - 1; i >= 0; i--) {
+                            ISpringHolders hold = mSpringHoldersUtil.mRegisterHoldersArray.get(i);
+                            hold.onFinish();
+                        }
+                    } else {
+                        super.dispatchTouchEvent(ev);
                     }
                     mMotionEventUtil.onCleanTouchEvent(ev);
                     return true;
@@ -248,9 +276,14 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
                 break;
             case MotionEvent.ACTION_CANCEL:
                 if (mSpringHoldersUtil.isHold()) {
-                    for (int i = mSpringHoldersUtil.mRegisterHoldersArray.size() - 1; i >= 0; i--) {
-                        ISpringHolders hold = mSpringHoldersUtil.mRegisterHoldersArray.get(i);
-                        hold.onCancel();
+                    if (isScroll()) {
+                        if (isPauseScroll()) return true;
+                        for (int i = mSpringHoldersUtil.mRegisterHoldersArray.size() - 1; i >= 0; i--) {
+                            ISpringHolders hold = mSpringHoldersUtil.mRegisterHoldersArray.get(i);
+                            hold.onCancel();
+                        }
+                    } else {
+                        super.dispatchTouchEvent(ev);
                     }
                     mMotionEventUtil.onCleanTouchEvent(ev);
                     return true;
@@ -373,19 +406,6 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         }
     }
 
-
-    public boolean registerHolder(ISpringHolders holder) {
-        int size = mSpringHoldersUtil.mRegisterHoldersArray.size();
-        boolean isSucce = mSpringHoldersUtil.registerHolder(holder);
-        return isSucce;
-    }
-
-    public boolean unregisterHolder(ISpringHolders holder) {
-        int size = mSpringHoldersUtil.mRegisterHoldersArray.size();
-        boolean isSucce = mSpringHoldersUtil.unregisterHolder(holder);
-        return isSucce;
-    }
-
     /*当有SpringView被SpringChild持有时候,SpringView自身的事件将被持有者处理*/
     private static final class SpringHoldersUtil {
         List<ISpringHolders> mRegisterHoldersArray = new ArrayList<>();
@@ -416,10 +436,36 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         }
     }
 
+    public boolean registerHolder(ISpringHolders holder) {
+        int size = mSpringHoldersUtil.mRegisterHoldersArray.size();
+        boolean isSucce = mSpringHoldersUtil.registerHolder(holder);
+        return isSucce;
+    }
+
+    public boolean unregisterHolder(ISpringHolders holder) {
+        int size = mSpringHoldersUtil.mRegisterHoldersArray.size();
+        boolean isSucce = mSpringHoldersUtil.unregisterHolder(holder);
+        return isSucce;
+    }
+
+    /**
+     * 判断是否正在滚动中
+     */
+    public final boolean isScroll() {
+        return (mSpringFlag & FLAG_IS_ROLLING) != 0;
+    }
+
+    /**
+     * 判断滚动事件是否已被暂停
+     */
+    public final boolean isPauseScroll() {
+        return (mSpringFlag & FLAG_PAUSE_SCROLL_EVENT) != 0;
+    }
+
     /**
      * 启用回弹效果
      */
-    public void enableSpringback() {
+    public final void enableSpringback() {
         setFlag(FLAG_OPEN_SPRINGBACK);
         checkEnableSpringback();
     }
@@ -463,7 +509,7 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
      */
     public void starSpringback(ISpringChild child, final ISpringbackExecutor springbackExecutor, long duration) {
         if (mSpringHoldersUtil.isHold(child)) {
-            mSpringFlag |= FLAG_PAUSE_TOUCHE_EVENT;
+            mSpringFlag |= FLAG_PAUSE_SCROLL_EVENT;
             if (mSpringbackAnimation == null) {
                 mSpringbackAnimation = ValueAnimator.ofFloat(1f, 0f);
                 mSpringbackAnimation.setInterpolator(new LinearInterpolator());
@@ -479,11 +525,11 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     }
 
     @Override
-    public void onAnimationUpdate(ValueAnimator animation) {
+    public final void onAnimationUpdate(ValueAnimator animation) {
         float value = (float) animation.getAnimatedValue();
         if (value == 0) {
-            mSpringFlag &= ~FLAG_PAUSE_TOUCHE_EVENT;
-        } else mSpringFlag |= FLAG_PAUSE_TOUCHE_EVENT;
+            mSpringFlag &= ~FLAG_PAUSE_SCROLL_EVENT;
+        } else mSpringFlag |= FLAG_PAUSE_SCROLL_EVENT;
         if (mISpringbackExecutor != null)
             mISpringbackExecutor.onSpringback(value, animation.getCurrentPlayTime());
 
