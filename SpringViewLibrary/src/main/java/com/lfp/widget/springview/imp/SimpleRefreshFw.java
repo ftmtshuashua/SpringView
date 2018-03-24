@@ -1,20 +1,19 @@
 package com.lfp.widget.springview.imp;
 
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.FrameLayout;
 
 import com.lfp.widget.springview.SpringView;
 import com.lfp.widget.springview.i.ISpringbackExecutor;
 
-import java.text.MessageFormat;
-
 /**
  * 一个简单的刷新框架
  * Created by LiFuPing on 2018/3/19.
  */
 
-public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
+public abstract class SimpleRefreshFw extends ImpSpringChild_Top {
 
     /*下拉刷新*/
     public static final int STATE_DOWN_REFESH = 4;
@@ -44,21 +43,6 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
 
     SimpleLoadingFw mSimpleLoadingFw;
 
-
-    /**
-     * 开始刷新
-     */
-    public void start() {
-        if (isRefeshing() || isStartLoading()) return;
-        getView().post(new Runnable() {
-            @Override
-            public void run() {
-                if (isRefeshing() || isStartLoading()) return;
-                getParent().registerHolder(SimpleRefeshFw.this);
-                springback(mAutoRefeshSpringback);
-            }
-        });
-    }
 
     private boolean isStartLoading() {
         return mSimpleLoadingFw != null && mSimpleLoadingFw.isStartLoading();
@@ -138,11 +122,11 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
 
     @Override
     public void onFinish() {
-        if (isRefeshing()) {
+        if (isRefeshing()) {  /*刷新中恢复到刷新状态*/
             if (mDistance > mStartRefreshHeight)
                 springback(mStartRefeshSpringback);
         } else {
-            if ((mFlag & FLAG_PREPARE_REFESH) != 0) {
+            if ((mFlag & FLAG_PREPARE_REFESH) != 0) { /*准格被刷新状态，执行开始刷新*/
                 if (mDistance > mStartRefreshHeight)
                     springback(mStartRefeshSpringback);
 
@@ -155,14 +139,14 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
         }
     }
 
-
     /*判断是否在刷新中*/
     public boolean isRefeshing() {
         return (mFlag & FLAG_START_REFESH) == FLAG_START_REFESH;
     }
 
     @Override
-    protected void onAttachToSpringView(final View contentView, final SpringView springView, final FrameLayout.LayoutParams params) {
+    public void onAttachToSpringView(final View contentView, final SpringView springView) {
+        final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         springView.addView(contentView, params);
         contentView.post(new Runnable() {
             @Override
@@ -171,10 +155,10 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
                 setStartRefreshHeight(height);
                 setMaxHeight(height * 2);
                 params.topMargin = -height;
+                contentView.setLayoutParams(params);
             }
         });
     }
-
 
     /**
      * 绑定加载加载控件。当加载未结束，不允许刷新。
@@ -193,10 +177,34 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
             if (mDistance <= 0) {
                 onCancel();
             } else { /*刷新完成*/
-                springback(mFinishRefeshSpringback, mFinishAnimationDuration);
+                new Handler() {
+                    @Override
+                    public void handleMessage(Message msg) {
+                        super.handleMessage(msg);
+                        springback(mFinishRefeshSpringback, mFinishAnimationDuration);
+                    }
+                }.sendEmptyMessageDelayed(0, 20);
             }
-        } else springback(mCancelRefeshSpringback);
+        } else {
+            springback(mCancelRefeshSpringback);
+        }
     }
+
+    /**
+     * 开始刷新
+     */
+    public void start() {
+        if (isRefeshing() || isStartLoading()) return;
+        getView().post(new Runnable() {
+            @Override
+            public void run() {
+                if (isRefeshing() || isStartLoading()) return;
+                getParent().registerHolder(SimpleRefreshFw.this);
+                springback(mAutoRefeshSpringback);
+            }
+        });
+    }
+
 
     /**
      * 刷新事件回调
@@ -206,13 +214,13 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
     /*滚动到正在刷新的位置*/
     ISpringbackExecutor mStartRefeshSpringback = new ISpringbackExecutor() {
         @Override
-        public void onSpringback(float rate, long currentPlayTime) {
-            if (rate == 0) {
+        public void onSpringback(float rate, long currentPlayTime, boolean animationIsEnde) {
+            if (animationIsEnde) {
                 mDistance = mStartRefreshHeight;
                 scrollTo(mDistance);
             } else {
-                float dis = (mDistance - mStartRefreshHeight) * rate + mStartRefreshHeight;
-                scrollTo(dis);
+                double dis = (mDistance - mStartRefreshHeight) * rate + mStartRefreshHeight;
+                scrollTo((float) dis);
             }
 
         }
@@ -221,9 +229,9 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
     /*取消事件*/
     ISpringbackExecutor mCancelRefeshSpringback = new ISpringbackExecutor() {
         @Override
-        public void onSpringback(float rate, long currentPlayTime) {
+        public void onSpringback(float rate, long currentPlayTime, boolean animationIsEnde) {
             scrollTo(mDistance * rate);
-            if (rate == 0) {
+            if (animationIsEnde) {
                 setState(STATE_INIT);
                 onCancel();
             }
@@ -236,8 +244,8 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
     /*自动刷新事件事件*/
     ISpringbackExecutor mAutoRefeshSpringback = new ISpringbackExecutor() {
         @Override
-        public void onSpringback(float rate, long currentPlayTime) {
-            if (rate == 1) {
+        public void onSpringback(float rate, long currentPlayTime, boolean animationIsEnde) {
+            if (currentPlayTime == 0) {
                 mFlag |= FLAG_START_REFESH;
                 setState(STATE_START_REFESH);
             }
@@ -245,7 +253,9 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
             mDistance = dis;
             scrollTo(dis);
 
-            if (rate == 0) onRefresh();
+            if (animationIsEnde) {
+                onRefresh();
+            }
         }
     };
 
@@ -265,7 +275,7 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
         }
 
         @Override
-        public void onSpringback(float rate, long currentPlayTime) {
+        public void onSpringback(float rate, long currentPlayTime, boolean animationIsEnde) {
             if (currentPlayTime == 0) mOffset = 0;
             if (mDurationTime * (1 - mWaitingProportion) < currentPlayTime) {
                 if (mOffset == 0) mOffset = rate;
@@ -273,7 +283,7 @@ public abstract class SimpleRefeshFw extends ImpSpringChild_Top {
                 scrollTo(dis);
             }
 
-            if (rate == 0) {
+            if (animationIsEnde) {
                 onCancel();
                 setState(STATE_INIT);
             }

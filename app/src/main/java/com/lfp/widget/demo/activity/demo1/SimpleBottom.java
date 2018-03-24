@@ -26,19 +26,22 @@ public abstract class SimpleBottom extends SimpleLoadingFw {
     @Override
     protected void onLoadingStateChange(int state) {
         switch (state) {
-            case SimpleBottom.STATE_REFRESH_NOT_OVER:
+            case STATE_All_DATA_IS_LOADED:
+                mTV_Info.setText("暂无更多数据");
+                break;
+            case STATE_REFRESH_NOT_OVER:
                 mTV_Info.setText("刷新未完成,请稍后...");
                 break;
-            case SimpleBottom.STATE_INIT:
+            case STATE_INIT:
                 mTV_Info.setText("上拉加载");
                 break;
-            case SimpleBottom.STATE_LOADING_FINISH:
+            case STATE_LOADING_FINISH:
                 mTV_Info.setText("加载完成");
                 break;
-            case SimpleBottom.STATE_PREPARE_LOADING:
+            case STATE_PREPARE_LOADING:
                 mTV_Info.setText("上拉加载");
                 break;
-            case SimpleBottom.STATE_START_LOADING:
+            case STATE_START_LOADING:
                 mTV_Info.setText("正在加载...");
                 break;
         }

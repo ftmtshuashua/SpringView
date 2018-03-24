@@ -1,6 +1,7 @@
 
 package com.lfp.widget.springview;
 
+import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -27,7 +28,7 @@ import java.util.List;
  * 弹动View
  * Created by LiFuPing on 2018/3/9.
  */
-public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpdateListener {
+public class SpringView extends FrameLayout {
     /**
      * 开启回弹效果 - 给SpringView设置SpringChild会覆盖该效果
      */
@@ -149,9 +150,10 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     /*移除SpringChild*/
     public void removeSpringChild(ISpringChild... childs) {
         for (ISpringChild child : childs) {
-            View contentView = child.getView();
-            if (contentView != null) removeView(contentView);
-            mSpringChild.remove(child);
+            if (mSpringChild.remove(child)) {
+                View contentView = child.getView();
+                if (contentView != null) removeView(contentView);
+            }
         }
         checkEnableSpringback();
     }
@@ -177,12 +179,12 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     private void addSpringChild(ISpringChild... childs) {
         if (childs == null && childs.length == 0) return;
         for (ISpringChild child : childs) {
-            child.attachParent(this);
-            child.getView(getContext(), this);
+            child.onAttachToSpringView(child.initView(getContext(), this), this);
             mSpringChild.add(child);
         }
         checkEnableSpringback();
         requestLayout();
+        invalidate();
     }
 
     public void setFlag(long flag) {
@@ -497,8 +499,8 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
     }
 
     /*-------------------------回弹效果--------------------------*/
-    ValueAnimator mSpringbackAnimation;
-    ISpringbackExecutor mISpringbackExecutor;
+
+    SpringBackAnimation mSpringBackAnimation = new SpringBackAnimation();
 
     /**
      * 执行回弹操作
@@ -508,32 +510,65 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
      * @param duration           执行时间
      */
     public void starSpringback(ISpringChild child, final ISpringbackExecutor springbackExecutor, long duration) {
-        if (mSpringHoldersUtil.isHold(child)) {
-            mSpringFlag |= FLAG_PAUSE_SCROLL_EVENT;
-            if (mSpringbackAnimation == null) {
-                mSpringbackAnimation = ValueAnimator.ofFloat(1f, 0f);
-                mSpringbackAnimation.setInterpolator(new LinearInterpolator());
-                mSpringbackAnimation.addUpdateListener(this);
-            } else if (mSpringbackAnimation.isRunning()) {
-                mSpringbackAnimation.end();
+        mSpringBackAnimation.starSpringback(child, springbackExecutor, duration);
+    }
+
+    private final class SpringBackAnimation implements Animator.AnimatorListener, ValueAnimator.AnimatorUpdateListener {
+        ValueAnimator mSpringbackAnimation;
+        ISpringbackExecutor mISpringbackExecutor;
+
+        public void starSpringback(ISpringChild child, final ISpringbackExecutor springbackExecutor, long duration) {
+            if (mSpringHoldersUtil.isHold(child)) {
+                if (mSpringbackAnimation == null) {
+                    mSpringbackAnimation = ValueAnimator.ofFloat(1f, 0f);
+                    mSpringbackAnimation.setInterpolator(new LinearInterpolator());
+                    mSpringbackAnimation.addUpdateListener(mSpringBackAnimation);
+                    mSpringbackAnimation.addListener(mSpringBackAnimation);
+                    mSpringbackAnimation.setRepeatMode(ValueAnimator.RESTART);
+                }
+                if (mSpringbackAnimation.isRunning()) mSpringbackAnimation.cancel();
+
+                mISpringbackExecutor = springbackExecutor;
+                mSpringbackAnimation.setFloatValues(1f, 0f);
+                mSpringbackAnimation.setDuration(duration);
+                mSpringbackAnimation.start();
             }
-            mISpringbackExecutor = springbackExecutor;
-            mSpringbackAnimation.setFloatValues(1f, 0f);
-            mSpringbackAnimation.setDuration(duration);
-            mSpringbackAnimation.start();
+        }
+
+        public void onAnimationStart(Animator animation) {
+            mSpringFlag |= FLAG_PAUSE_SCROLL_EVENT;
+        }
+
+        public void onAnimationEnd(Animator animation) {
+            mSpringFlag &= ~FLAG_PAUSE_SCROLL_EVENT;
+
+            if (mISpringbackExecutor == null) return;
+            mISpringbackExecutor.onSpringback((float) mCurrentAnimationValue, mCurrentAnimationPlayTime, true);
+        }
+
+        public void onAnimationCancel(Animator animation) {
+            mSpringFlag &= ~FLAG_PAUSE_SCROLL_EVENT;
+
+            if (mISpringbackExecutor == null) return;
+            mISpringbackExecutor.onSpringback(0, mCurrentAnimationPlayTime, true);
+        }
+
+        public void onAnimationRepeat(Animator animation) {
+        }
+
+        double mCurrentAnimationValue;
+        long mCurrentAnimationPlayTime;
+
+        public void onAnimationUpdate(ValueAnimator animation) {
+            mCurrentAnimationValue = (float) animation.getAnimatedValue();
+            mCurrentAnimationPlayTime = animation.getCurrentPlayTime();
+
+            if (mISpringbackExecutor == null) return;
+            mISpringbackExecutor.onSpringback((float) mCurrentAnimationValue, mCurrentAnimationPlayTime, false);
+
         }
     }
 
-    @Override
-    public final void onAnimationUpdate(ValueAnimator animation) {
-        float value = (float) animation.getAnimatedValue();
-        if (value == 0) {
-            mSpringFlag &= ~FLAG_PAUSE_SCROLL_EVENT;
-        } else mSpringFlag |= FLAG_PAUSE_SCROLL_EVENT;
-        if (mISpringbackExecutor != null)
-            mISpringbackExecutor.onSpringback(value, animation.getCurrentPlayTime());
-
-    }
 
     private static final class SimperSpringTop extends ImpSpringChild_Top implements ISpringbackExecutor {
         float mDistance;
@@ -573,9 +608,9 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         }
 
         @Override
-        public void onSpringback(float rate, long currentPlayTime) {
+        public void onSpringback(float rate, long currentPlayTim, boolean animationIsEnde) {
             scoll(mDistance * rate);
-            if (rate == 0) onCancel();
+            if (animationIsEnde) onCancel();
         }
     }
 
@@ -618,9 +653,9 @@ public class SpringView extends FrameLayout implements ValueAnimator.AnimatorUpd
         }
 
         @Override
-        public void onSpringback(float rate, long currentPlayTime) {
+        public void onSpringback(float rate, long currentPlayTime, boolean animationIsEnde) {
             scoll(mDistance * rate);
-            if (rate == 0) onCancel();
+            if (animationIsEnde) onCancel();
         }
     }
 

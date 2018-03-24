@@ -19,18 +19,12 @@ public abstract class ISpringChild implements ISpringHolders {
     long mFlag;
     int mGroupId;/*组ID,SpringView同一时间只会执行同一组的SpringChild*/
 
-    public final void attachParent(SpringView springView) {
-        mParent = springView;
-    }
-
     /*获取SpringChild的View*/
-    public final View getView(Context context, SpringView springView) {
+    public final View initView(Context context, SpringView springView) {
+        mParent = springView;
         if (mView == null) {
             mView = onCreateView(context, springView);
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-            onAttachToSpringView(mView, springView, params);
             onViewCreated(mView);
-
         }
         return mView;
     }
@@ -47,8 +41,8 @@ public abstract class ISpringChild implements ISpringHolders {
     }
 
     /*这个方法完成将ContentView添加到SpringView中*/
-    protected void onAttachToSpringView(View contentView, SpringView springView, FrameLayout.LayoutParams params) {
-        if (contentView != null) springView.addView(contentView, 0, params);
+    public void onAttachToSpringView(View contentView, SpringView springView) {
+        if (contentView != null) springView.addView(contentView, 0);
     }
 
     public Context getContext() {

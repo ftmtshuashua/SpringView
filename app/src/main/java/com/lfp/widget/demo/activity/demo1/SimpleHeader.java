@@ -8,13 +8,13 @@ import android.widget.TextView;
 
 import com.lfp.widget.demo.R;
 import com.lfp.widget.springview.SpringView;
-import com.lfp.widget.springview.imp.SimpleRefeshFw;
+import com.lfp.widget.springview.imp.SimpleRefreshFw;
 
 /**
  * 自定义简单头部刷新
  * Created by LiFuPing on 2018/3/17.
  */
-public abstract class SimpleHeader extends SimpleRefeshFw {
+public abstract class SimpleHeader extends SimpleRefreshFw {
 
     TextView mTV_Info;
     ProgressBar mProgressBar;
@@ -31,22 +31,22 @@ public abstract class SimpleHeader extends SimpleRefeshFw {
 
     @Override
     protected void onRefreshStateChange(int state) {
-        mProgressBar.setVisibility(state == SimpleRefeshFw.STATE_START_REFESH ? View.VISIBLE : View.GONE);
+        mProgressBar.setVisibility(state == SimpleRefreshFw.STATE_START_REFESH ? View.VISIBLE : View.GONE);
         switch (state) {
-            case SimpleRefeshFw.STATE_LOADING_NOT_OVER:
+            case SimpleRefreshFw.STATE_LOADING_NOT_OVER:
                 mTV_Info.setText("加载未完成,请稍后...");
                 break;
-            case SimpleRefeshFw.STATE_DOWN_REFESH:
-            case SimpleRefeshFw.STATE_INIT:
+            case SimpleRefreshFw.STATE_DOWN_REFESH:
+            case SimpleRefreshFw.STATE_INIT:
                 mTV_Info.setText("下拉刷新");
                 break;
-            case SimpleRefeshFw.STATE_PREPARE_REFESH:
+            case SimpleRefreshFw.STATE_PREPARE_REFESH:
                 mTV_Info.setText("松开刷新");
                 break;
-            case SimpleRefeshFw.STATE_START_REFESH:
+            case SimpleRefreshFw.STATE_START_REFESH:
                 mTV_Info.setText("正在刷新...");
                 break;
-            case SimpleRefeshFw.STATE_REFESH_FINISH:
+            case SimpleRefreshFw.STATE_REFESH_FINISH:
                 mTV_Info.setText("刷新完成");
                 break;
         }

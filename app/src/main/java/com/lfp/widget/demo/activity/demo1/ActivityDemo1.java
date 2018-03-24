@@ -30,6 +30,7 @@ public class ActivityDemo1 extends AppCompatActivity {
     }
 
     RecyclerViewAdapter mAdapter;
+    SpringView mSpringView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,7 +41,7 @@ public class ActivityDemo1 extends AppCompatActivity {
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         mRecyclerView.setAdapter(mAdapter = new RecyclerViewAdapter());
 
-        SpringView mSpringView = (SpringView) findViewById(R.id.view_SpringView);
+        mSpringView = (SpringView) findViewById(R.id.view_SpringView);
         mSpringView.setSpringChild(mRefresh, mLoading);
         mLoading.setRefeshFx(mRefresh);
         mRefresh.setLoadingFx(mLoading);
@@ -67,6 +68,7 @@ public class ActivityDemo1 extends AppCompatActivity {
                         buildArray.add(MessageFormat.format("刷新数据 - {0,number,0}", i));
                     }
                     mAdapter.setData(buildArray);
+                    mLoading.setIsLoadedAllData(mAdapter.getItemCount() >= 16);
                     finishRefresh();
                 }
             }.execute();
@@ -88,11 +90,11 @@ public class ActivityDemo1 extends AppCompatActivity {
                         buildArray.add(MessageFormat.format("加载数据 - {0,number,0}", i));
                     }
                     mAdapter.addData(buildArray);
+                    setIsLoadedAllData(mAdapter.getItemCount() >= 16);
                     finishLoading();
                 }
             }.execute();
         }
     };
-
 
 }

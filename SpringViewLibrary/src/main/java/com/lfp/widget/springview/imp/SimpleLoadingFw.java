@@ -15,18 +15,33 @@ import com.lfp.widget.springview.i.ISpringbackExecutor;
 public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
 
     private static final long FLAG_START_LOADING = 0x1; /*开始加载*/
+    private static final long FLAG_All_DATA_IS_LOADED = 0x1 << 4; /*已经加载了所有数据*/
 
-    /*准备加载*/
-    public static final int STATE_PREPARE_LOADING = 1;
-    /*开始加载*/
-    public static final int STATE_START_LOADING = 2;
-    /*初始化*/
+
+    /**
+     * 初始化
+     */
     public static final int STATE_INIT = 3;
-    /*加载完成*/
+    /**
+     * 准备加载
+     */
+    public static final int STATE_PREPARE_LOADING = 1;
+    /**
+     * 开始加载
+     */
+    public static final int STATE_START_LOADING = 2;
+    /**
+     * 加载完成
+     */
     public static final int STATE_LOADING_FINISH = 5;
-
-    /*刷新未结束*/
+    /**
+     * 正在刷新
+     */
     public static final int STATE_REFRESH_NOT_OVER = 6;
+    /**
+     * 已完成所有数据的加载
+     */
+    public static final int STATE_All_DATA_IS_LOADED = 7;
 
     int mStartLoadingHeight;/*开始加载的高度*/
     float mDistance;
@@ -34,7 +49,9 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
     int mCurrentState;
     long mFinishAnimationDuration = 500l; /*完成动画持续时间*/
 
-    SimpleRefeshFw mSimpleRefeshFw;
+
+    SimpleRefreshFw mSimpleRefeshFw; /*互斥控制*/
+
 
     /**
      * 设置完成动画持续时间
@@ -46,13 +63,25 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
         mFinishLoadding.setDuration(duration);
     }
 
+    /**
+     * 设置所有数据已经加载
+     */
+    public void setIsLoadedAllData(boolean is) {
+        if (is) mFlag |= FLAG_All_DATA_IS_LOADED;
+        else mFlag &= ~FLAG_All_DATA_IS_LOADED;
+    }
+
     @Override
     public float onSpring(View springContentView, float dis_y, float correction_distance_y) {
         mDistance += dis_y / 2;
         if (mDistance < -mStartLoadingHeight) mDistance = -mStartLoadingHeight;
 
-        if (mSimpleRefeshFw != null && mSimpleRefeshFw.isRefeshing()) {
-            setState(STATE_REFRESH_NOT_OVER);
+        boolean isRefeshing = mSimpleRefeshFw != null && mSimpleRefeshFw.isRefeshing();
+        boolean isAllDataIsLoaded = (mFlag & FLAG_All_DATA_IS_LOADED) != 0;
+        if (isRefeshing || isAllDataIsLoaded) {
+            if (isRefeshing) setState(STATE_REFRESH_NOT_OVER);
+            else if (isAllDataIsLoaded) setState(STATE_All_DATA_IS_LOADED);
+
             scrollTo(mDistance);
             if (mDistance >= 0) onCancel();
             return mDistance;
@@ -115,7 +144,8 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
     }
 
     @Override
-    protected void onAttachToSpringView(final View contentView, final SpringView springView, final FrameLayout.LayoutParams params) {
+    public void onAttachToSpringView(final View contentView, final SpringView springView) {
+        final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         springView.addView(contentView, params);
         contentView.post(new Runnable() {
             @Override
@@ -125,6 +155,7 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
 
                 params.gravity = Gravity.BOTTOM;
                 params.bottomMargin = -height;
+                contentView.setLayoutParams(params);
             }
         });
     }
@@ -135,7 +166,7 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
      *
      * @param refesh 刷新控件
      */
-    public void setRefeshFx(SimpleRefeshFw refesh) {
+    public void setRefeshFx(SimpleRefreshFw refesh) {
         mSimpleRefeshFw = refesh;
     }
 
@@ -155,10 +186,9 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
     /*取消事件*/
     ISpringbackExecutor mCancelLoadding = new ISpringbackExecutor() {
         @Override
-        public void onSpringback(float rate, long currentPlayTime) {
+        public void onSpringback(float rate, long currentPlayTime, boolean animationIsEnde) {
             scrollTo(mDistance * rate);
-
-            if (rate == 0) {
+            if (animationIsEnde) {
                 setState(STATE_INIT);
                 onCancel();
             }
@@ -182,7 +212,7 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
         }
 
         @Override
-        public void onSpringback(float rate, long currentPlayTime) {
+        public void onSpringback(float rate, long currentPlayTime, boolean animationIsEnde) {
             if (currentPlayTime == 0) mOffset = 0;
             if (mDurationTime * (1 - mWaitingProportion) < currentPlayTime) {
                 if (mOffset == 0) mOffset = rate;
@@ -190,7 +220,7 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
                 scrollTo(dis);
             }
 
-            if (rate == 0) {
+            if (animationIsEnde) {
                 onCancel();
                 setState(STATE_INIT);
             }

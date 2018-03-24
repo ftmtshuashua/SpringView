@@ -10,7 +10,8 @@ public interface ISpringbackExecutor {
     /**
      * @param rate            回弹比例(1.0f ~ 0.0f)
      * @param currentPlayTime 当前运行时间
+     * @param animationIsEnd  这个动画是否结束
      */
-    void onSpringback(float rate, long currentPlayTime);
+    void onSpringback(float rate, long currentPlayTime, boolean animationIsEnd);
 
 }

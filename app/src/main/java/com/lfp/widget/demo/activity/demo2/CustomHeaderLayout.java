@@ -67,7 +67,8 @@ public abstract class CustomHeaderLayout extends ImpSpringChild_Top implements V
 
 
     @Override
-    protected void onAttachToSpringView(View contentView, SpringView springView, final FrameLayout.LayoutParams params) {
+    public void onAttachToSpringView(View contentView, SpringView springView ) {
+        final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,FrameLayout.LayoutParams.WRAP_CONTENT);
         springView.addView(contentView, params);
         springView.registerHolder(this);
         springView.post(new Runnable() {
