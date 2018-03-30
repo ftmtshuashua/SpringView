@@ -2,7 +2,6 @@ package com.lfp.widget.springview.i;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.FrameLayout;
 
 import com.lfp.widget.springview.SpringView;
 
@@ -12,12 +11,16 @@ import com.lfp.widget.springview.SpringView;
  */
 
 public abstract class ISpringChild implements ISpringHolders {
+
+    public static final long FLAG_DISABLE = 0x1 << 1; /*禁用该Child*/
+
     //    public static final int FLAG_RUNING = 1; /*标志这个ISpringChild正在被执行*/
     View mView; /*SpringChild的内容*/
     SpringView mParent;
 
-    long mFlag;
+    int mChildFlag;
     int mGroupId;/*组ID,SpringView同一时间只会执行同一组的SpringChild*/
+
 
     /*获取SpringChild的View*/
     public final View initView(Context context, SpringView springView) {
@@ -97,5 +100,19 @@ public abstract class ISpringChild implements ISpringHolders {
      */
     public abstract boolean onCheckHoldSpringView(SpringView.EdgeCheckUtil edgeCheckUtil, SpringView.TrendCheckUtil trendCheckUtil);
 
+    /**
+     * 是否启用当前Child
+     *
+     * @param enable 启用与否
+     */
+    public void setEnable(boolean enable) {
+        if (enable) mChildFlag &= ~FLAG_DISABLE;
+        else mChildFlag |= FLAG_DISABLE;
+    }
 
+    /**是否启用当前Child
+     * @return 启用与否*/
+    public boolean isEnable() {
+        return (mChildFlag & FLAG_DISABLE) == 0;
+    }
 }

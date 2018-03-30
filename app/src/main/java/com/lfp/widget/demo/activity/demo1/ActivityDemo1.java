@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.Button;
 
 import com.lfp.widget.demo.R;
 import com.lfp.widget.demo.activity.adapter.RecyclerViewAdapter;
@@ -29,32 +31,54 @@ public class ActivityDemo1 extends AppCompatActivity {
         c.startActivity(intent);
     }
 
+    View.OnClickListener mOnClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.view_Disable:
+                    mLoading.setEnable(!mLoading.isEnable());
+                    mRefresh.setEnable(!mRefresh.isEnable());
+
+                    mBT_Disable.setText(mRefresh.isEnable() ? "禁用加载" : "启用加载");
+                    break;
+            }
+        }
+    };
+
     RecyclerViewAdapter mAdapter;
-    SpringView mSpringView;
+    Button mBT_Disable;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_demo_recyclerview);
+        mBT_Disable = (Button) findViewById(R.id.view_Disable);
+        mBT_Disable.setOnClickListener(mOnClick);
+
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.view_RecycleListView);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         mRecyclerView.setAdapter(mAdapter = new RecyclerViewAdapter());
 
-        mSpringView = (SpringView) findViewById(R.id.view_SpringView);
+        SpringView mSpringView = (SpringView) findViewById(R.id.view_SpringView);
         mSpringView.setSpringChild(mRefresh, mLoading);
         mLoading.setRefeshFx(mRefresh);
         mRefresh.setLoadingFx(mLoading);
         mRefresh.setFinishAnimationDuration(1000);
 
 
+        initData();
+
+        mRefresh.start(); /*自动刷新*/
+    }
+
+    void initData() {
         List<String> buildArray = new ArrayList<>();
         for (int i = 0; i < 15; i++) {
             buildArray.add(MessageFormat.format("原始数据 - {0,number,0}", i));
         }
         mAdapter.setData(buildArray);
 
-        mRefresh.start(); /*自动刷新*/
     }
 
     SimpleHeader mRefresh = new SimpleHeader() {

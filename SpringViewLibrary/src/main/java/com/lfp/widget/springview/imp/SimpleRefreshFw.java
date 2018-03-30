@@ -1,7 +1,5 @@
 package com.lfp.widget.springview.imp;
 
-import android.os.Handler;
-import android.os.Message;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -177,13 +175,7 @@ public abstract class SimpleRefreshFw extends ImpSpringChild_Top {
             if (mDistance <= 0) {
                 onCancel();
             } else { /*刷新完成*/
-                new Handler() {
-                    @Override
-                    public void handleMessage(Message msg) {
-                        super.handleMessage(msg);
-                        springback(mFinishRefeshSpringback, mFinishAnimationDuration);
-                    }
-                }.sendEmptyMessageDelayed(0, 20);
+                springback(mFinishRefeshSpringback, mFinishAnimationDuration);
             }
         } else {
             springback(mCancelRefeshSpringback);
@@ -194,11 +186,15 @@ public abstract class SimpleRefreshFw extends ImpSpringChild_Top {
      * 开始刷新
      */
     public void start() {
+        if(!isEnable())return;
         if (isRefeshing() || isStartLoading()) return;
         getView().post(new Runnable() {
             @Override
             public void run() {
-                if (isRefeshing() || isStartLoading()) return;
+                if ((mFlag & FLAG_START_REFESH) != 0 || isStartLoading()) return;
+                mFlag |= FLAG_START_REFESH;
+                setState(STATE_START_REFESH);
+
                 getParent().registerHolder(SimpleRefreshFw.this);
                 springback(mAutoRefeshSpringback);
             }
@@ -245,10 +241,6 @@ public abstract class SimpleRefreshFw extends ImpSpringChild_Top {
     ISpringbackExecutor mAutoRefeshSpringback = new ISpringbackExecutor() {
         @Override
         public void onSpringback(float rate, long currentPlayTime, boolean animationIsEnde) {
-            if (currentPlayTime == 0) {
-                mFlag |= FLAG_START_REFESH;
-                setState(STATE_START_REFESH);
-            }
             float dis = mStartRefreshHeight * (1 - rate);
             mDistance = dis;
             scrollTo(dis);

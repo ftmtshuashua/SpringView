@@ -3,20 +3,49 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
-    <com.lfp.widget.springview.SpringView
-        android:id="@+id/view_SpringView"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        app:enable_springback="true">
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/view_RecycleListView"
+        <com.lfp.widget.springview.SpringView
+            android:id="@+id/view_SpringView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:enable_springback="true">
 
-    </com.lfp.widget.springview.SpringView>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/view_RecycleListView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </com.lfp.widget.springview.SpringView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginLeft="1dp"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:background="#ffffffff"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="功能区" />
+
+        <Button
+            android:id="@+id/view_Disable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用加载" />
+
+    </LinearLayout>
 </LinearLayout>

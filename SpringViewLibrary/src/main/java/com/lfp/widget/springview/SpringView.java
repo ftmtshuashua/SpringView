@@ -214,13 +214,15 @@ public class SpringView extends FrameLayout {
             case MotionEvent.ACTION_MOVE: {
                 mTrendCheckUtil.setTouchMove(mMotionEventUtil.getMaxDistanceEvent());
                 if (!isScroll()) {
-                    if (mTouchSlop <= mTrendCheckUtil.getToucheDistance())
+//                    if (mTouchSlop <= mTrendCheckUtil.getToucheDistance())
+                    if (mTouchSlop <= Math.abs(mTrendCheckUtil.getTouchY()))
                         mSpringFlag |= FLAG_IS_ROLLING;
                 }
 
                 /*检查SpringChild是否开始执行*/
                 if (!isPauseScroll()) {
                     for (ISpringChild child : mSpringChild) {
+                        if(!child.isEnable())continue;
                         if (!mSpringHoldersUtil.isHold() || (!mSpringHoldersUtil.isHold(child) && child.getGroupId() == mSpringHoldersUtil.getGroupId())) {
                             boolean is = child.onCheckHoldSpringView(mEdgeCheckUtil, mTrendCheckUtil) && (mSpringHoldersUtil.isHold() ? true : isScroll());
                             if (is && !mSpringHoldersUtil.isHold()) {
