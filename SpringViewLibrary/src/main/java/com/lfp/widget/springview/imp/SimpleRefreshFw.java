@@ -1,6 +1,7 @@
 package com.lfp.widget.springview.imp;
 
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import com.lfp.widget.springview.SpringView;
@@ -41,6 +42,9 @@ public abstract class SimpleRefreshFw extends ImpSpringChild_Top {
 
     SimpleLoadingFw mSimpleLoadingFw;
 
+    public SimpleRefreshFw() {
+
+    }
 
     private boolean isStartLoading() {
         return mSimpleLoadingFw != null && mSimpleLoadingFw.isStartLoading();
@@ -63,7 +67,9 @@ public abstract class SimpleRefreshFw extends ImpSpringChild_Top {
         if (isStartLoading()) {
             setState(STATE_LOADING_NOT_OVER);
             scrollTo(mDistance);
-            if (mDistance <= 0) onCancel();
+            if (mDistance <= 0) {
+                onCancel();
+            }
             return mDistance;
         }
 
@@ -73,6 +79,7 @@ public abstract class SimpleRefreshFw extends ImpSpringChild_Top {
             } else scrollTo(mDistance);
         } else {
             if (mDistance <= 0) {
+
                 onCancel();
             } else if (mDistance >= mStartRefreshHeight) {
                 mFlag |= FLAG_PREPARE_REFESH;
@@ -146,14 +153,18 @@ public abstract class SimpleRefreshFw extends ImpSpringChild_Top {
     public void onAttachToSpringView(final View contentView, final SpringView springView) {
         final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         springView.addView(contentView, params);
-        contentView.post(new Runnable() {
+
+        contentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
-            public void run() {
+            public void onGlobalLayout() {
                 int height = contentView.getHeight();
-                setStartRefreshHeight(height);
-                setMaxHeight(height * 2);
-                params.topMargin = -height;
-                contentView.setLayoutParams(params);
+                if (height > 0) {
+                    setStartRefreshHeight(height);
+                    setMaxHeight(height * 2);
+                    params.topMargin = -height;
+                    contentView.setLayoutParams(params);
+                    contentView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
             }
         });
     }
@@ -186,7 +197,7 @@ public abstract class SimpleRefreshFw extends ImpSpringChild_Top {
      * 开始刷新
      */
     public void start() {
-        if(!isEnable())return;
+        if (!isEnable()) return;
         if (isRefeshing() || isStartLoading()) return;
         getView().post(new Runnable() {
             @Override

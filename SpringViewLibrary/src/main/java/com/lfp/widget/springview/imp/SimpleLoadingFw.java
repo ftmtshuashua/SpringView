@@ -2,6 +2,7 @@ package com.lfp.widget.springview.imp;
 
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import com.lfp.widget.springview.SpringView;
@@ -147,17 +148,31 @@ public abstract class SimpleLoadingFw extends ImpSpringChild_Bottom {
     public void onAttachToSpringView(final View contentView, final SpringView springView) {
         final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         springView.addView(contentView, params);
-        contentView.post(new Runnable() {
+        contentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
-            public void run() {
+            public void onGlobalLayout() {
                 int height = contentView.getHeight();
-                setStartLoadingHeight(height);
-
-                params.gravity = Gravity.BOTTOM;
-                params.bottomMargin = -height;
-                contentView.setLayoutParams(params);
+                if (height > 0) {
+                    setStartLoadingHeight(height);
+                    params.gravity = Gravity.BOTTOM;
+                    params.bottomMargin = -height;
+                    contentView.setLayoutParams(params);
+                    contentView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
             }
         });
+
+//        contentView.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                int height = contentView.getHeight();
+//                setStartLoadingHeight(height);
+//
+//                params.gravity = Gravity.BOTTOM;
+//                params.bottomMargin = -height;
+//                contentView.setLayoutParams(params);
+//            }
+//        });
     }
 
 

@@ -21,6 +21,7 @@ import com.lfp.widget.springview.imp.ImpSpringChild_Bottom;
 import com.lfp.widget.springview.imp.ImpSpringChild_Top;
 import com.lfp.widget.springview.util.MotionEventUtil;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -222,10 +223,11 @@ public class SpringView extends FrameLayout {
                 /*检查SpringChild是否开始执行*/
                 if (!isPauseScroll()) {
                     for (ISpringChild child : mSpringChild) {
-                        if(!child.isEnable())continue;
-                        if (!mSpringHoldersUtil.isHold() || (!mSpringHoldersUtil.isHold(child) && child.getGroupId() == mSpringHoldersUtil.getGroupId())) {
+                        if (!child.isEnable()) continue;
+                        boolean isHold = mSpringHoldersUtil.isHold();
+                        if (!isHold || (!mSpringHoldersUtil.isHold(child) && child.getGroupId() == mSpringHoldersUtil.getGroupId())) {
                             boolean is = child.onCheckHoldSpringView(mEdgeCheckUtil, mTrendCheckUtil) && (mSpringHoldersUtil.isHold() ? true : isScroll());
-                            if (is && !mSpringHoldersUtil.isHold()) {
+                            if (is && !isHold) {
                                 mTrendCheckUtil.clean();
                                 mTrendCheckUtil.setTouchMove(mMotionEventUtil.getMaxDistanceEvent());
                             }

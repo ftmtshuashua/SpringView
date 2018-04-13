@@ -5,6 +5,8 @@ import android.view.View;
 
 import com.lfp.widget.springview.SpringView;
 
+import java.text.MessageFormat;
+
 /**
  * 划拉效果控制类，该类控制和接收SpringView的滑动事件，并控制SpringView的响应逻辑
  * Created by LiFuPing on 2018/3/12.

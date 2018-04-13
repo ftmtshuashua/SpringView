@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.lfp.widget.demo.R;
+import com.lfp.widget.demo.activity.demo3.ActivityDemo3;
 import com.lfp.widget.springview.SpringView;
 
 import com.lfp.widget.demo.activity.demo1.ActivityDemo1;
@@ -23,6 +24,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.view_Demo1).setOnClickListener(this);
         findViewById(R.id.view_Demo2).setOnClickListener(this);
 
+//        ActivityDemo3.start(this);
+//        finish();
     }
 
     @Override

@@ -19,6 +19,7 @@
 
         <activity android:name="com.lfp.widget.demo.activity.demo1.ActivityDemo1" />
         <activity android:name="com.lfp.widget.demo.activity.demo2.ActivityDemo2" />
+        <activity android:name="com.lfp.widget.demo.activity.demo3.ActivityDemo3" />
 
     </application>
 
